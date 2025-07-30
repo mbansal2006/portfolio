@@ -9,7 +9,7 @@ const Index = () => {
         <header className="mb-16">
           <h1 className="text-5xl font-bold text-foreground mb-4">Mahir Bansal</h1>
           <p className="text-xl text-muted-foreground leading-relaxed mb-6">
-            Technology, Government, Markets
+            I feel like the world is a car. Tech is the engine. Markets are the wheels. Government is the chassis. I’d love to be a mechanic one day.
           </p>
           <div className="flex items-center gap-6 text-sm">
             <span className="inline-flex items-center gap-2">
