@@ -64,18 +64,6 @@ const Thoughts = () => {
           ))}
         </div>
 
-        {/* Call to Action */}
-        <div className="text-center mt-16 p-8 bg-gradient-card border border-essay-card-border rounded-2xl">
-          <h3 className="text-2xl font-semibold text-foreground mb-4">
-            More Essays Coming Soon
-          </h3>
-          <p className="text-muted-foreground mb-6">
-            New thoughts and explorations are always in development. Check back regularly for fresh perspectives.
-          </p>
-          <Button variant="essay-outline">
-            Subscribe for Updates
-          </Button>
-        </div>
       </div>
     </div>
   );

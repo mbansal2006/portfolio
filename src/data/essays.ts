@@ -1835,7 +1835,7 @@ export const essays: Essay[] = [
   title: "The Stakes of the AI Race",
   description: "An analysis of the global AI competition, examining how different models reflect their creators' worldviews and what's at stake for the future.",
   excerpt: "This isn't just about censorship—it's about what histories are preserved and what wounds are acknowledged. The AI race isn't just about power or prestige. It's about the future of intelligence itself.",
-  downloadLink: "https://drive.google.com/file/d/your-ai-race-essay-link/view",
+  downloadLink: "https://drive.google.com/file/d/1lkQxxpOvQl8q-gZS-ffirX_F2xLAF5-W/view?usp=sharing",
   content: `
     <div class="space-y-6 prose prose-lg prose-invert max-w-none">
       <h1>The Stakes of the AI Race</h1>
