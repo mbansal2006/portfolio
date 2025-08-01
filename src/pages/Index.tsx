@@ -9,7 +9,7 @@ const Index = () => {
         <header className="mb-16">
           <h1 className="text-5xl font-bold text-foreground mb-4">Mahir Bansal</h1>
           <p className="text-xl text-muted-foreground leading-relaxed mb-6">
-            I feel like the world is a car. Tech is the engine. Markets are the wheels. Government is the chassis. I’d love to be a mechanic one day.
+            Tech, Govt., Markets
           </p>
           <div className="flex items-center gap-6 text-sm">
             <span className="inline-flex items-center gap-2">
@@ -47,20 +47,12 @@ const Index = () => {
           <h2 className="text-3xl font-semibold text-foreground mb-6">About</h2>
           <div className="space-y-4 text-muted-foreground leading-relaxed">
             <p>
-              I’m a student at Washington University in St. Louis, double majoring in Math and Philosophy with a focus on the philosophy of science.
+              Hey! I'm Mahir. I'm a math student at WashU, and I spend most of my time thinking about where we're headed. For me that means asking about what future we want and how do we get there with what's in our toolbox. Over the past few years, I've been bouncing between internships and projects trying to learn more about each of these tools (tech, government, and markets). I've found that I'm most excited by applying those tools in high-stakes problems like health or development.
             </p>
             <p>
-              I’ve worked at the U.S. Treasury, in the Senate, and in health policy consulting, mostly on projects that combine public data with lightweight software to make sense of messy systems. I like building tools that make hard things easier, whether that means tracking a moving target, finding the right signal, or helping people understand something that matters.
+              Overall, I like learning by doing and thinking out loud. Always happy to chat.
             </p>
-            <p>
-              Right now I’m focused on using AI and frontier technologies to solve real problems. I'm excited about the wave of change that’s happening and I want to be part of it. Whether it’s analyzing regulatory comments, mapping supply chains, or building something totally new, I care about making these tools useful in the real world.
-            </p>
-            <p>
-              I’ve also been writing essays on the future of intelligence and technology. The first set, called <em>The Endurance of Intelligence</em>, explores how things stretch toward infinity or collapse to zero. You can find those under “Thoughts.”
-            </p>
-            <p>
-              Always up for interesting problems, honest conversations, and building things that matter.
-            </p>
+
           </div>
         </section>
 
@@ -79,10 +71,10 @@ const Index = () => {
                 <span className="px-2 py-1 text-xs bg-primary/20 text-primary rounded-md">in progress</span>
               </div>
               <p className="text-muted-foreground leading-relaxed">
-                A system leveraging AI to deliver granular and actionable policy intelligence.
+                Building ultra-lightweight AI applications for resource-constrained, offline enviornments.
               </p>
               <p className="text-sm text-muted-foreground">
-                <strong>Stack:</strong> Python, PostgreSQL, WhisperX, React, and uses Llama 4 Maverick with Reinforcement Learning from Human Feedback (RLHF) for tailored summarization and alert optimization
+                <strong>Stack:</strong> Python, PostgreSQL, React, Whisper (STT), Gemma3n, RLHF (trlx, PPO) Coqui (TTS), Pi5
               </p>
             </div>
 
@@ -93,7 +85,6 @@ const Index = () => {
                     Drug Monitor
                   </a>
                 </h3>
-                <span className="px-2 py-1 text-xs bg-primary/20 text-primary rounded-md">in progress</span>
               </div>
               <p className="text-muted-foreground leading-relaxed">
                 A dashboard that maps where FDA-approved drugs are manufactured globally, using government data sources like DailyMed, OpenFDA, and the FDA's drug-shortage database. Includes filters for risk, trade compliance, and alliance membership.
