@@ -152,6 +152,22 @@ const Index = () => {
           <div className="space-y-8">
             
             <div className="space-y-2">
+              <h3 className="text-lg font-medium text-foreground">Product Lead, Applied AI</h3>
+              <p className="text-muted-foreground font-medium">LAUNCH (Founder University)</p>
+              <p className="text-muted-foreground leading-relaxed">
+                Building lightweight AI applications (Shravana) in LAUNCH's Founder University Cohort 11.
+              </p>
+            </div>
+            
+            <div className="space-y-2">
+              <h3 className="text-lg font-medium text-foreground">Health Policy Intern</h3>
+              <p className="text-muted-foreground font-medium">Tiber Creek Group</p>
+              <p className="text-muted-foreground leading-relaxed">
+               Researched impacts of tariffs and budget reconciliation on healthcare clients, including supply chain exposure and revenue implications. Gained exposure to emerging tech policy issues, particularly around AI and federal regulatory strategy.
+              </p>
+            </div>
+            
+            <div className="space-y-2">
               <h3 className="text-lg font-medium text-foreground">Health Security and Government Affairs Intern</h3>
               <p className="text-muted-foreground font-medium">Medical Countermeasures Coalition (Todd Strategy Group)</p>
               <p className="text-muted-foreground leading-relaxed">
