@@ -2219,7 +2219,7 @@ export const essays: Essay[] = [
 {
   id: "the-first-machine-that-cared",
   title: "The First Machine that Card",
-  description: "A case for models that care. Exploring why true intelligence—especially at scale—requires more than optimization. It needs orientation.",
+  description: "A case for models that care. Exploring why true intelligence, especially at scale, requires more than optimization. It needs orientation.",
   excerpt: "Without care, an AI might sound smart, but it won’t know what to hold onto. It’ll generate endlessly, but forget what it’s trying to preserve. It’ll respond, but never reflect.",
   downloadLink: "https://drive.google.com/file/d/1ZnY1Dy_0pSYyxLe4-Bi9jYAVNTUpoo8A/view?usp=sharing",
   content: `
