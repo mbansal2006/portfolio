@@ -2051,5 +2051,170 @@ export const essays: Essay[] = [
       <p>The future is being written in code. And who's at the keyboard couldn't matter more.</p>
     </div>
   `
+},
+{
+  id: "worst-invention-21st-century",
+  title: "The Worst Invention of the 21st Century",
+  description: "A critique of the hashtag as a deceptively powerful invention that flattened meaning, fueled performative discourse, reshaped how we communicate in the information age, and poses the greatest danger in the generative age.",
+  excerpt: "It taught us how to speak in fragments. It trained us to compress our beliefs, to commoditize our values, to aestheticize our identities.",
+  downloadLink: "https://drive.google.com/file/d/19s3xhhQ1Y4GRlRMZL1MZpltU-a0Js31s/view?usp=sharing",
+  content: `
+    <div class="space-y-6 prose prose-lg prose-invert max-w-none">
+      <h1>The Worst Invention of the 21st Century</h1>
+
+      <p>The worst invention of the 21st century might not go on to be e-cigarettes, plastic coffee pods, deepfakes, or lethal autonomous weapons. It may be something so seemingly benign, we forgot to take it seriously.</p>
+
+      <p>I’m talking about the hashtag.</p>
+
+      <p>It didn’t kill anyone. It didn’t win a war. It didn’t even seem that revolutionary. But it solved a real problem: how to make sense of scattered conversations in a chaotic digital world. It grouped the ungrouped. It turned noise into searchable signal.</p>
+
+      <p>But over time, it did something subtler and stranger. It rewired how we express ourselves — and in doing so, how we understand the world and live in the information age.</p>
+
+      <p>Even nuclear weapons — maybe the most morally charged invention of the 20th century — had collateral outputs: the transistor, satellite communications, GPS, medical imaging. Not to mention the very debatable direct benefits of mutually assured destruction. The nuclear arms race gave rise to the information age. Terrible origins, but transformative results.</p>
+
+      <p>But the hashtag? I’m not sure it ever built anything of value that couldn’t have been built another way.</p>
+
+      <p>What it did do was hollow out communication. Flatten meaning. Incentivize performativity. Turn care into currency. The hashtag isn’t just a symbol of modern discourse. It’s the blueprint.</p>
+
+      <h2>Compression and Collapse</h2>
+
+      <p>The power of the hashtag is compression. Take a messy, emotional, living issue and reduce it to a sharable tag.</p>
+
+      <p>#HustleHard.<br>#Funny.<br>#PersonalDevelopment.<br>#SelfLove.<br>#StopAsianHate.<br>#FreePalestine.<br>#BuildTheWall.<br>#BlackLivesMatter.</p>
+
+      <p>Some of these are righteous. Some are reactionary. All are simplifications.</p>
+
+      <p>This isn’t new, simplification. It’s not even bad. It’s just how language works. We use words as signifiers - compressed symbols that point to something else. A word like freedom isn’t the concept itself. It’s a vessel. It conveys its meaning from context, culture, and repetition. This is true for any text, motion, gesture, or sound. A wave. A handshake. A "what's up?". A "wassup". A "i love you". A "i hate you". That’s the whole field of semiotics — the study of signs, symbols, and how we make meaning.</p>
+
+      <p>But there’s a difference between simplification and collapse.</p>
+
+      <p>Language always flattens a bit, but collapse takes it further. They don’t just represent meaning. They overwrite it. They turn the sign into the thing. The container becomes the content. And once that happens, I feel like we lose the meaning it was made to convey. It’s easy to manipulate, replicate, and monetize.</p>
+
+      <p>I keep thinking of "lol". We'll, or at least I will, text someone "lol". But not laugh. Honestly, when I do laugh, "lol" doesn't feel like enough. Maybe that's where we get "LMAO", "LMFAO", "ROFL", "😂", or even "🤣". I feel like we move to a new signifier when one colappses. When it feels like it's not enough to convey its meaning. Maybe its because all it conveys is itself.</p>
+
+      <p>It's the same for watches. The Rolex GMT was designed to be an aviator watch. In cooperation with Pan Am, Rolex added the fourth hand and a rotating bezel to display the "Greenwich Mean Time (GMT)" to tell different times simulatenously as pilots went across timezones. Similarly, the Rolex Submariner and its rotating bezel was designed for divers to keep track of time left in their oxygen tanks at significant depths.</p>
+
+      <p>Now, they're mostly status symbols. People think "ooh nice" or "expensive". Functionality or innovation probably doesn't cross their mind. That meaning collapsed.</p>
+
+      <p>Hashtags accelate that collapse.</p>
+
+      <p>The tag doesn’t just describe a position - it becomes it. And that’s the problem. The more a phrase spreads, the more it solidifies. The more it means, the less you can say with it. It stops conveying something. It becomes a slogan.</p>
+
+      <p>Those slogans don't mean much. They don’t invite doubt. They don’t evolve.</p>
+
+      <p>We see that in obvious cases, where hashtags start as nothing more than a vessel: "fyp" or #viral. And is less obvious cases where hashtags that were meaningful become a shell of their former meaning: #BlackLivesMatter, #LoveWins, or #StayHome.</p>
+
+      <p>Those ones meant something when they broke. They broke with urgency. They were raw. Specific. They held stories. Many people still mean something when they use it now. But scroll through it now and you’ll also find brand campaigns, shallow summaries, sometimes even the exact opposite of what it stood for. The tag lost its edge. Not because people stopped caring, but because the platform rewards repetition, not reflection. It doesn't care about what's in the vessel. It just knows the vessel and its engagement.</p>
+
+      <h2>Coming Together</h2>
+
+      <p>The hashtag followed this trend too. It started as a vessel with profound meaning.</p>
+
+      <p>On August 23, 2007, Chris Messina, a tech product designer, <a href="https://www.cnbc.com/2020/01/09/how-chris-messina-got-twitter-to-use-the-hashtag.html">came up with the hashtag</a>. He tweeted:</p>
+
+      <blockquote>
+        <p>"How do you feel about using # (pound) for groups. As in #barcamp [msg]"</p>
+      </blockquote>
+
+      <p>It makes perfect sense now. A way to group ideas and even their originators. At first, Twitter didn't think so, though. Messina says when we walked into Twitter's "grungy office" to pitch the hashtag, they dismissed it as "something that was too nerdy that would never catch on" and suggested they could write an algorithim to handle grouping without hashtags.</p>
+
+      <p>But, spoiler alert, hashtags did catch on. That same year, Messina convinced his friend to use hashtags in his tweets posting information about a San Diego wildfire, and pretty soon others followed suit to keep track of tweets sharing news about the wildfire. The value was real. The vessel of the literal hashtag "#" carried crucial meaning. A way to group otherwise scattered information. From there, Wired Magazine wrote the story and one thing led to another. Almost 18 years later, there are over 44 billion hashtags on X (assigned Twitter at birth).</p>
+
+      <p>Groups were meaningful. The first uses of the hashtag let people find critical information about the fire. Later, #MeToo allowed survivors of sexual harassment and assault to come together.</p>
+
+      <p>A hashtag became a boundary line. It created groups. Not just for search results, but for belonging. It let people with similar perspectives and experiences come together. At the same time, anyone could draw those boundaries. Not long after #BlackLivesMatter we got #AllLivesMatter. What began as a tool for coming together also became a tool for division.</p>
+
+      <p>And, again, underneath all that, the more we used a hashtag the less it meant.</p>
+
+      <p>My point is, the hashtag wasn't created to promote collapse. It succumbed to collapse itself.</p>
+
+      <h2>The Algorithm’s Native Language</h2>
+
+      <p>The hashtag isn't just a social tool. It's a machine interface.</p>
+
+      <p>Hashtags are how algorithms understand our behavior. They train the feed, inform the recommendation engine, shape the “For You” page. They’re not neutral metadata. They’re instructions — telling the system how to amplify, whom to show what, and when.</p>
+
+      <p>When you post a hashtag, you’re not just joining a conversation. You’re fueling the engine.</p>
+
+      <p>When you like a post, even if you don't look at its hashtag, you're fueling the engine.</p>
+
+      <p>And the engine roars: show more of that. Show more of what’s tagged. Show more of what’s trending.</p>
+
+      <p>This creates a recursive loop: tag -> visibility -> imitation -> virality -> collapse. That’s how ideas become aesthetics. That’s how complex issues get metabolized into trends, then discarded. That's how vessels become empty.</p>
+
+      <p>And lately, it’s not just people in the loop. It’s bots. It’s scripts. It’s AI-generated slop — content stitched together from scraped templates and keyword-stuffed captions, designed purely to fuel the engine. Posts that weren’t written to be read, just to be ranked.</p>
+
+      <p>And the algorithm doesn’t care. It can’t tell the difference between a person expressing something real and a bot pumping out tens of thousands of posts tagged #SelfImprovement and #Democrat or #Republican. All it sees is the vessel.</p>
+
+      <p>The system doesn’t care what you meant. It doesn’t even know what meaning is. It only cares if people click.</p>
+
+      <p>The result? A language built for machines. A world optimized for engagement. And a feed full of ghosts.</p>
+
+      <p>Even going back to disaster response, how the hashtag caught on, we're seeing the opposite. AI generated slop coupled with "#CaliforniaWildfires" complicated response to the LA wildfires. Similarly, first responders following hashtags to get information on the North Carolina floods wasted valuable time looking for AI generated kids in posts bearing the right hashtags.</p>
+
+      <p>Maybe that’s the real danger.</p>
+
+      <p>Not that computers wipes us out in some final act of superintelligence with nuclear weapons. But that it does something older. That it plays the role of instigator. Covertly and persistently.</p>
+
+      <p>In Christianity, Satan isn’t just some villain. He’s the instigator. The one who divides. The one who whispers. The one who turns people against each other not by force, but by suggestion. Did God really say that? Do you really trust them? Are you sure you’re on the right side?</p>
+
+      <p>Our engine doesn’t need to be evil to act the same way.</p>
+
+      <p>It just needs to reward division. To amplify anger. To circulate half-truths. To create in-groups and out-groups until all we see are sides.</p>
+
+      <p>Maybe it doesn’t need to push us off the cliff. It just has lean us toward the edge over and over again until we fall. All while we call it "engagement".</p>
+
+      <h2>Performativity</h2>
+
+      <p>Around collapse, hashtags stop incentivizing dialogue. They shift to performativity. We just move around empty vessels and oftentimes we know it.</p>
+
+      <p>There’s always been social pressure to signal belonging, but the hashtag industrialized it. It turned solidarity into a template. It made awareness quantifiable. It told us when to speak and what to say. And if we didn't, the platform gave us a record of it.</p>
+
+      <p>In the wake of every crisis, there’s a collective tension: did you post? Did you say something? Did you use the right words? Did you use the right hashtag? Silence became complicity. But oftentimes the alternative isn’t engagement. It’s choreography.</p>
+
+      <p>Hashtagging becomes ritual. Performative mourning. Activism as aesthetic.</p>
+
+      <p>We probably tell ourselves it’s better than nothing. It gets the word out. But sometimes, I wonder if it’s worse. Because it gives us the illusion of action without the cost. It lets us express outrage without having to sustain it. And when the next thing comes along, we rinse and repeat.</p>
+
+      <p>The hashtag gives us the satisfaction of participation without any of the responsibility. It simulates care.</p>
+
+      <p><a href="https://plato.stanford.edu/entries/baudrillard/">Baudrillard</a> would’ve had a field day. The hashtag isn’t a signifier — it’s a simulacrum. A copy with no orignal. It replaces the thing it once referred to.</p>
+
+      <p>#ClimateAction isn’t action.<br>#JusticeForGeorgeFloyd isn’t justice.<br>#NeverAgain isn’t policy.<br>#MentalHealthAwareness isn’t therapy.</p>
+
+      <p>They stand in for care. But they’re not care. They’re its outline.</p>
+
+      <p>When you scroll through hundreds of identical posts tagged with the same cause, it starts to feel like something’s being done. We start to think awareness is a sufficient end. At some level we're comfortable with the simualtion being enough.</p>
+
+      <p>But I don't think it is.</p>
+
+      <p>It's sticky. It tricks the brain. We see the words, we feel the vibe, and we assume momentum. The performative becomes real enough. The ritual becomes the movement. The tag becomes the truth.</p>
+
+      <p>And then the moment passes, and we move on. And nothing changes.</p>
+
+      <p>We just wait a bit. Post #NeverAgain. Feel a little better. Wait a bit. Repeat.</p>
+
+      <h2>Final Thoughts</h2>
+
+      <p>I want to be fair. The hashtag gave a lot of value. #MeToo helped surface real stories. Hashtags have raised money, organized protests, and coordinated disaster response.</p>
+
+      <p>But I’d argue those same things would’ve happened — and did happen — without hashtags. People used email lists and online bulletin boards. We have algorithms that can read an understand content itself, even without AI. Organizing isn’t new. Hashtags didn’t invent coordination.</p>
+
+      <p>Meanwhile, the downsides are harder to ignore.</p>
+
+      <p>The flattening of discourse. The rise of aestheticized outrage. The polarization of language. The replacement of conversation with slogans. The amplification of the most extreme signals.</p>
+
+      <p>It’s not just what the hashtag gave us. It’s what it replaced.</p>
+
+      <p>And unlike the transistor — a byproduct of war that birthed the digital age — the hashtag’s legacy feels narrower. It didn’t unlock new science. It didn’t launch new industries.</p>
+
+      <p>It taught us how to speak in fragments. It trained us to compress our beliefs, to commodotize our values, to aestheticize our identities. It changed how we talk. How we belong.</p>
+
+      <p>And now, even if X dies, the hashtag lives on — not just in language, but in logic. We speak in trends. We flatten for legibility. We self-surveil. We curate our care. We fear saying the wrong thing, but more than that, we fear saying nothing.</p>
+
+      <p>The scariest part to me: I don't think there's any going back. The hashtag will always live on. Maybe even after the internet.</p>
+    </div>
+  `
 }
+
 ];
