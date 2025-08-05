@@ -192,10 +192,10 @@ const Index = () => {
             </div>
 
             <div className="space-y-2">
-              <h3 className="text-lg font-medium text-foreground">Spring Semester Senate Page (one of twenty-seven nationally)</h3>
+              <h3 className="text-lg font-medium text-foreground">Spring Semester Senate Page</h3>
               <p className="text-muted-foreground font-medium">United States Senate</p>
               <p className="text-muted-foreground leading-relaxed">
-                Supported day-to-day floor operations for the U.S. Senate, including chamber setup, document delivery, and exposure to the legislative process at close range during the 118th Congress.
+                Supported day-to-day floor operations for the U.S. Senate, including chamber setup, document delivery, and exposure to the legislative process at close range during the 118th Congress. Nominated as one of twenty-seven students nationally.
               </p>
             </div>
 
