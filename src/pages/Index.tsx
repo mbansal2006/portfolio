@@ -177,7 +177,7 @@ const Index = () => {
 
             <div className="space-y-2">
               <h3 className="text-lg font-medium text-foreground">Legislative Intern</h3>
-              <p className="text-muted-foreground font-medium">United States Senate (Office of Senator Tim Kaine)</p>
+              <p className="text-muted-foreground font-medium">United States Senate</p>
               <p className="text-muted-foreground leading-relaxed">
                 Researched Medicare reimbursement policy, biosimilar entry, and pharmacy benefit manager (PBM) reform. Wrote internal memos for the Senator's health policy team and tracked developments in drug pricing legislation.
               </p>
@@ -192,7 +192,7 @@ const Index = () => {
             </div>
 
             <div className="space-y-2">
-              <h3 className="text-lg font-medium text-foreground">Spring Semester Senate Page (Nominated by Sen. Tim Kaine)</h3>
+              <h3 className="text-lg font-medium text-foreground">Spring Semester Senate Page (one of twenty-seven nationally)</h3>
               <p className="text-muted-foreground font-medium">United States Senate</p>
               <p className="text-muted-foreground leading-relaxed">
                 Supported day-to-day floor operations for the U.S. Senate, including chamber setup, document delivery, and exposure to the legislative process at close range during the 118th Congress.
