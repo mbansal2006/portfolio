@@ -47,7 +47,7 @@ const Index = () => {
           <h2 className="text-3xl font-semibold text-foreground mb-6">About</h2>
           <div className="space-y-4 text-muted-foreground leading-relaxed">
             <p>
-              Hey! I'm Mahir. I'm a math student at WashU, and I spend most of my time thinking about where we're headed. For me that means asking about what future we want and how do we get there with what's in our toolbox. Over the past few years, I've been bouncing between internships and projects trying to learn more about each of these tools (tech, government, and markets). I've found that I'm most excited by applying those tools in high-stakes problems like health or development.
+              Hey! I'm Mahir. I'm a math and computer science student at WashU, and I spend most of my time thinking about where we're headed. For me that means asking about what future we want and how do we get there with what's in our toolbox. Over the past few years, I've been bouncing between internships and projects trying to learn more about each of these tools (tech, government, and markets). I've found that I'm most excited by applying those tools in high-stakes problems like health or development.
             </p>
             <p>
               Overall, I like learning by doing and thinking out loud. Always happy to chat.
