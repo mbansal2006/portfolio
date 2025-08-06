@@ -55,7 +55,7 @@ const Thoughts = () => {
       {/* Essays Grid */}
       <div className="max-w-7xl mx-auto px-6 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {essays.map((essay) => (
+          {essays.slice().reverse().map((essay) => (
             <EssayCard
               key={essay.id}
               essay={essay}
