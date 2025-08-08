@@ -163,7 +163,7 @@ const Index = () => {
               <h3 className="text-lg font-medium text-foreground">Product Lead, Applied AI</h3>
               <p className="text-muted-foreground font-medium">LAUNCH (Founder University)</p>
               <p className="text-muted-foreground leading-relaxed">
-                Building lightweight AI applications (Shravana) in LAUNCH's Founder University Cohort 11.
+                Building AI applications (Krypte) in LAUNCH's Founder University Cohort 11.
               </p>
             </div>
             
