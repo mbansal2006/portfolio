@@ -64,17 +64,25 @@ const Index = () => {
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <h3 className="text-xl font-medium text-foreground">
-                  <a href="https://github.com/mbansal2006/shravana" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
-                    Shravana
+                  <a href="https://krypte.ai" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                    Krypte
                   </a>
                 </h3>
                 <span className="px-2 py-1 text-xs bg-primary/20 text-primary rounded-md">in progress</span>
               </div>
               <p className="text-muted-foreground leading-relaxed">
-                Building ultra-lightweight AI applications for resource-constrained, offline enviornments.
-              </p>
+  Something new. Join waitlist at{" "}
+  <a
+    href="https://krypte.ai"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="inline-flex items-center rounded-full bg-yellow-400/10 px-2 py-0.5 text-xs font-medium text-yellow-400 ring-1 ring-inset ring-yellow-400/20"
+  >
+    krypte.ai
+  </a>
+</p>
               <p className="text-sm text-muted-foreground">
-                <strong>Stack:</strong> Python, PostgreSQL, React, Whisper (STT), Gemma3n, RLHF (trlx, PPO) Coqui (TTS), Pi5
+                <strong>Stack:</strong> Python, Fernet Encryption, IPFS (Web3.Storage), Akash (Decentralized Compute), OSS Open-Weight LLMs
               </p>
             </div>
 
