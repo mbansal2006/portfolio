@@ -73,7 +73,7 @@ const Index = () => {
               <p className="text-muted-foreground leading-relaxed">
   AI without the trust burden. See {" "}
   <a
-    href="https://krypte.ai"
+    href="https://www.krypte.ai"
     target="_blank"
     rel="noopener noreferrer"
     className="inline-flex items-center rounded-full bg-yellow-400/10 px-2 py-0.5 text-xs font-medium text-yellow-400 ring-1 ring-inset ring-yellow-400/20"
