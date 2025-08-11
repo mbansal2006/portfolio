@@ -98,6 +98,51 @@ const orgColors = {
   "Human": "#6b7280"
 };
 
+// Custom shape components for different model types
+const CustomShape = (props: any) => {
+  const { cx, cy, type, fill } = props;
+  
+  if (type === "square") {
+    return (
+      <rect
+        x={cx - 4}
+        y={cy - 4}
+        width={8}
+        height={8}
+        fill={fill}
+        opacity={0.7}
+      />
+    );
+  } else if (type === "triangle") {
+    return (
+      <polygon
+        points={`${cx},${cy - 4} ${cx - 4},${cy + 4} ${cx + 4},${cy + 4}`}
+        fill={fill}
+        opacity={0.7}
+      />
+    );
+  } else if (type === "diamond") {
+    return (
+      <polygon
+        points={`${cx},${cy - 4} ${cx - 4},${cy} ${cx},${cy + 4} ${cx + 4},${cy}`}
+        fill={fill}
+        opacity={0.7}
+      />
+    );
+  } else {
+    // circle (default)
+    return (
+      <circle
+        cx={cx}
+        cy={cy}
+        r={4}
+        fill={fill}
+        opacity={0.7}
+      />
+    );
+  }
+};
+
 // Shape mapping for model types
 const typeShapes = {
   "Base LLM": "circle",
@@ -342,16 +387,28 @@ export default function ArcPPFDashboard() {
                 </YAxis>
                 <Tooltip content={<CustomTooltip />} />
                 
-                {/* Render scatter plots for each organization */}
-                {Object.entries(groupedData).map(([org, orgData]) => (
-                  <Scatter 
-                    key={org}
-                    data={orgData as any[]} 
-                    name={org}
-                    fill={orgColors[org] || "#6b7280"}
-                    opacity={0.7}
-                  />
-                ))}
+                {/* Render scatter plots for each organization and model type combination */}
+                {Object.entries(groupedData).map(([org, orgData]) => {
+                  // Group by model type within each organization
+                  const typeGroups: any = {};
+                  (orgData as any[]).forEach(d => {
+                    if (!typeGroups[d.type]) {
+                      typeGroups[d.type] = [];
+                    }
+                    typeGroups[d.type].push(d);
+                  });
+                  
+                  return Object.entries(typeGroups).map(([type, typeData]) => (
+                    <Scatter 
+                      key={`${org}-${type}`}
+                      data={typeData as any[]} 
+                      name={`${org} (${type})`}
+                      fill={orgColors[org] || "#6b7280"}
+                      opacity={0.7}
+                      shape={(props: any) => <CustomShape {...props} type={typeShapes[type] || "circle"} />}
+                    />
+                  ));
+                })}
                 
                 {/* Frontier line */}
                 {frontier.length > 0 && (
