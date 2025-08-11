@@ -318,66 +318,137 @@ const Index = () => {
     <div className="min-h-screen bg-black text-yellow-400 font-mono flex flex-col">
       {/* Navigation Bar */}
       <div className="bg-yellow-900 border-b-2 border-yellow-400 p-4">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold">MAHIR BANSAL</h1>
-          <div className="text-right">
-            <div>SCORE: {score}</div>
-            <div>HIGH SCORE: {highScore}</div>
+        {/* Mobile Header */}
+        <div className="lg:hidden">
+          <div className="flex justify-between items-center mb-3">
+            <h1 className="text-xl font-bold">MAHIR BANSAL</h1>
+            <div className="text-right text-sm">
+              <div>SCORE: {score}</div>
+              <div>HIGH: {highScore}</div>
+            </div>
+          </div>
+          
+          {/* Mobile Navigation - Compact */}
+          <div className="grid grid-cols-4 gap-2">
+            <Link
+              to="/thoughts"
+              className="px-2 py-1 bg-yellow-600 text-white text-xs font-bold hover:bg-yellow-700 transition-colors border border-yellow-400 rounded text-center"
+            >
+              📝 Writings
+            </Link>
+            <Link
+              to="/frontier"
+              className="px-2 py-1 bg-orange-600 text-white text-xs font-bold hover:bg-orange-700 transition-colors border border-orange-400 rounded text-center"
+            >
+              🤖 AI
+            </Link>
+            <a
+              href="https://www.krypte.ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-2 py-1 bg-purple-600 text-white text-xs font-bold hover:bg-purple-700 transition-colors border border-purple-400 rounded text-center"
+            >
+              🛡️ Krypte
+            </a>
+            <a
+              href="https://www.linkedin.com/in/mahirbansal/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-2 py-1 bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors border border-blue-400 rounded text-center"
+            >
+              💼 LinkedIn
+            </a>
+            <button
+              onClick={copyEmailToClipboard}
+              className="px-2 py-1 bg-red-600 text-white text-xs font-bold hover:bg-red-700 transition-colors border border-red-400 rounded text-center"
+            >
+              📧 Email
+            </button>
+            <a
+              href="https://drive.google.com/file/d/1roTioVMkGKi3oM-4IJn8BsYVifJdzhPV/view?usp=sharing"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-2 py-1 bg-orange-600 text-white text-xs font-bold hover:bg-orange-700 transition-colors border border-orange-400 rounded text-center"
+            >
+              📄 Resume
+            </a>
+            <a
+              href="https://github.com/mbansal2006"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-2 py-1 bg-gray-600 text-white text-xs font-bold hover:bg-gray-700 transition-colors border border-gray-400 rounded text-center"
+            >
+              💻 GitHub
+            </a>
+            <div className="px-2 py-1 bg-gray-600 text-white text-xs font-bold border border-gray-400 rounded text-center opacity-50">
+              🎮 Game
+            </div>
           </div>
         </div>
-        
-        {/* Navigation Links */}
-        <div className="flex flex-wrap gap-3 justify-center">
-          <Link
-            to="/thoughts"
-            className="px-4 py-2 bg-yellow-600 text-white font-bold hover:bg-yellow-700 transition-colors border border-yellow-400 rounded"
-          >
-            📝 Writings
-          </Link>
-          <Link
-            to="/frontier"
-            className="px-4 py-2 bg-orange-600 text-white font-bold hover:bg-orange-700 transition-colors border border-orange-400 rounded"
-          >
-            🤖 AI Frontier
-          </Link>
-          <a
-            href="https://www.krypte.ai"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-4 py-2 bg-purple-600 text-white font-bold hover:bg-purple-700 transition-colors border border-purple-400 rounded"
-          >
-            🛡️ Krypte
-          </a>
-          <a
-            href="https://www.linkedin.com/in/mahirbansal/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-4 py-2 bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors border border-blue-400 rounded"
-          >
-            💼 LinkedIn
-          </a>
-          <button
-            onClick={copyEmailToClipboard}
-            className="px-4 py-2 bg-red-600 text-white font-bold hover:bg-red-700 transition-colors border border-red-400 rounded"
-          >
-            📧 Email
-          </button>
-          <a
-            href="https://drive.google.com/file/d/1roTioVMkGKi3oM-4IJn8BsYVifJdzhPV/view?usp=sharing"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-4 py-2 bg-orange-600 text-white font-bold hover:bg-orange-700 transition-colors border border-orange-400 rounded"
-          >
-            📄 Resume
-          </a>
-          <a
-            href="https://github.com/mbansal2006"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-4 py-2 bg-gray-600 text-white font-bold hover:bg-gray-700 transition-colors border border-gray-400 rounded"
-          >
-            💻 GitHub
-          </a>
+
+        {/* Desktop Header */}
+        <div className="hidden lg:block">
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-2xl font-bold">MAHIR BANSAL</h1>
+            <div className="text-right">
+              <div>SCORE: {score}</div>
+              <div>HIGH SCORE: {highScore}</div>
+            </div>
+          </div>
+          
+          {/* Desktop Navigation Links */}
+          <div className="flex flex-wrap gap-3 justify-center">
+            <Link
+              to="/thoughts"
+              className="px-4 py-2 bg-yellow-600 text-white font-bold hover:bg-yellow-700 transition-colors border border-yellow-400 rounded"
+            >
+              📝 Writings
+            </Link>
+            <Link
+              to="/frontier"
+              className="px-4 py-2 bg-orange-600 text-white font-bold hover:bg-orange-700 transition-colors border border-orange-400 rounded"
+            >
+              🤖 AI Frontier
+            </Link>
+            <a
+              href="https://www.krypte.ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 bg-purple-600 text-white font-bold hover:bg-purple-700 transition-colors border border-purple-400 rounded"
+            >
+              🛡️ Krypte
+            </a>
+            <a
+              href="https://www.linkedin.com/in/mahirbansal/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors border border-blue-400 rounded"
+            >
+              💼 LinkedIn
+            </a>
+            <button
+              onClick={copyEmailToClipboard}
+              className="px-4 py-2 bg-red-600 text-white font-bold hover:bg-red-700 transition-colors border border-red-400 rounded"
+            >
+              📧 Email
+            </button>
+            <a
+              href="https://drive.google.com/file/d/1roTioVMkGKi3oM-4IJn8BsYVifJdzhPV/view?usp=sharing"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 bg-orange-600 text-white font-bold hover:bg-orange-700 transition-colors border border-orange-400 rounded"
+            >
+              📄 Resume
+            </a>
+            <a
+              href="https://github.com/mbansal2006"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 bg-gray-600 text-white font-bold hover:bg-gray-700 transition-colors border border-gray-400 rounded"
+            >
+              💻 GitHub
+            </a>
+          </div>
         </div>
       </div>
 
@@ -394,15 +465,15 @@ const Index = () => {
         </div>
       )}
 
-      <div className="flex flex-1">
+      <div className="flex flex-1 flex-col lg:flex-row">
         {/* Game Board */}
-        <div className="flex-1 p-4 flex flex-col justify-center">
+        <div className="flex-1 p-2 lg:p-4 flex flex-col justify-center">
           {!gameStarted ? (
             <div className="text-center space-y-6">
               {/* Intro Section */}
-              <div className="mb-8 text-left max-w-3xl mx-auto bg-yellow-900 p-6 rounded-lg border border-yellow-400">
-                <h2 className="text-2xl font-bold mb-4 text-yellow-300">Hey! I'm Mahir 👋</h2>
-                <div className="text-yellow-200 space-y-3 text-sm leading-relaxed">
+              <div className="mb-4 lg:mb-8 text-left max-w-3xl mx-auto bg-yellow-900 p-4 lg:p-6 rounded-lg border border-yellow-400">
+                <h2 className="text-xl lg:text-2xl font-bold mb-3 lg:mb-4 text-yellow-300">Hey! I'm Mahir 👋</h2>
+                <div className="text-yellow-200 space-y-2 lg:space-y-3 text-xs lg:text-sm leading-relaxed">
                   <p>
                     I'm a math and computer science student at WashU, and I spend most of my time thinking about where we're headed. 
                     For me that means asking about what future we want and how do we get there with what's in our toolbox.
@@ -421,17 +492,18 @@ const Index = () => {
                 </div>
               </div>
 
-              <div className="text-4xl mb-8">🐍</div>
-              <h2 className="text-3xl font-bold">SNAKE GAME</h2>
-              <div className="text-lg space-y-2">
-                <p>Use arrows to move the snake, eat food, and avoid obstacles</p>
+              <div className="text-3xl lg:text-4xl mb-4 lg:mb-8">🐍</div>
+              <h2 className="text-2xl lg:text-3xl font-bold">SNAKE GAME</h2>
+              <div className="text-sm lg:text-lg space-y-2">
+                <p className="lg:hidden">Swipe or use buttons to control the snake</p>
+                <p className="hidden lg:block">Use arrows to move the snake, eat food, and avoid obstacles</p>
               </div>
-              <div className="text-lg space-y-1 text-yellow-300">
+              <div className="text-sm lg:text-lg space-y-1 text-yellow-300">
                 <p>Collect schools, jobs, and projects</p>
               </div>
               <button
                 onClick={startGame}
-                className="px-8 py-4 bg-yellow-600 text-black font-bold border-2 border-yellow-400 hover:bg-yellow-700 transition-colors"
+                className="px-6 lg:px-8 py-3 lg:py-4 bg-yellow-600 text-black font-bold border-2 border-yellow-400 hover:bg-yellow-700 transition-colors text-sm lg:text-base"
               >
                 PLAY GAME
               </button>
@@ -586,55 +658,55 @@ const Index = () => {
         </div>
 
         {/* Experience Info Panel */}
-        <div className="w-96 bg-yellow-900 border-l-2 border-yellow-400 p-4 overflow-y-auto flex flex-col justify-center">
+        <div className="w-full lg:w-96 bg-yellow-900 lg:border-l-2 border-yellow-400 p-2 lg:p-4 overflow-y-auto flex flex-col justify-center">
           {selectedExperience ? (
-            <div className="space-y-4">
+            <div className="space-y-3 lg:space-y-4">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold">{selectedExperience.name}</h2>
+                <h2 className="text-lg lg:text-xl font-bold">{selectedExperience.name}</h2>
                 <button
                   onClick={() => setSelectedExperience(null)}
-                  className="text-yellow-400 hover:text-white"
+                  className="text-yellow-400 hover:text-white text-lg lg:text-xl"
                 >
                   ✕
                 </button>
               </div>
               
               <div className="flex items-center gap-2">
-                <span className="text-2xl">{getTypeIcon(selectedExperience.type)}</span>
-                <span className="text-yellow-300 text-sm">{selectedExperience.location}</span>
+                <span className="text-xl lg:text-2xl">{getTypeIcon(selectedExperience.type)}</span>
+                <span className="text-yellow-300 text-xs lg:text-sm">{selectedExperience.location}</span>
               </div>
               
-              <p className="text-yellow-300 text-sm">{selectedExperience.description}</p>
+              <p className="text-yellow-300 text-xs lg:text-sm">{selectedExperience.description}</p>
               
               {selectedExperience.year && (
-                <div className="text-yellow-400 text-sm">
+                <div className="text-yellow-400 text-xs lg:text-sm">
                   <strong>Year:</strong> {selectedExperience.year}
                 </div>
               )}
               
-              <div className="text-yellow-400 text-sm">
+              <div className="text-yellow-400 text-xs lg:text-sm">
                 <strong>Points:</strong> {selectedExperience.points}
               </div>
 
               {selectedExperience.details && (
                 <div className="space-y-2">
-                  <h3 className="font-bold text-yellow-400">DETAILS:</h3>
+                  <h3 className="font-bold text-yellow-400 text-xs lg:text-sm">DETAILS:</h3>
                   {selectedExperience.details.map((detail, index) => (
                     <div key={index} className="flex items-center gap-2">
                       <span className="text-yellow-400">▶</span>
-                      <span className="text-yellow-200 text-sm">{detail}</span>
+                      <span className="text-yellow-200 text-xs lg:text-sm">{detail}</span>
                     </div>
                   ))}
                 </div>
               )}
 
               {selectedExperience.url && (
-                <div className="mt-4">
+                <div className="mt-3 lg:mt-4">
                   <a 
                     href={selectedExperience.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-block px-4 py-2 bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors border border-blue-400"
+                    className="inline-block w-full text-center px-3 lg:px-4 py-2 bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors border border-blue-400 text-xs lg:text-sm"
                   >
                     View Project →
                   </a>
@@ -722,34 +794,35 @@ const Index = () => {
           )}
 
           {/* Projects Carousel */}
-          <div className="mt-8 p-6 bg-blue-900 border-2 border-blue-400 rounded-lg">
-            <div className="text-center mb-6">
-              <div className="text-3xl mb-2">🚀</div>
-              <h3 className="text-xl font-bold text-blue-300">PROJECTS</h3>
+          <div className="mt-4 lg:mt-8 p-4 lg:p-6 bg-blue-900 border-2 border-blue-400 rounded-lg">
+            <div className="text-center mb-4 lg:mb-6">
+              <div className="text-2xl lg:text-3xl mb-2">🚀</div>
+              <h3 className="text-lg lg:text-xl font-bold text-blue-300">PROJECTS</h3>
             </div>
             
             <div className="relative">
-              <div className="flex overflow-x-auto gap-6 pb-6 scrollbar-hide">
+              {/* Mobile: Vertical Stack */}
+              <div className="lg:hidden space-y-4">
                 {experiences
                   .filter(exp => exp.type === 'project' && exp.id !== 'health-economics')
                   .sort((a, b) => b.impressiveness - a.impressiveness)
                   .map((project, index) => (
                     <div 
                       key={project.id}
-                      className="flex-shrink-0 w-72 sm:w-80 bg-blue-800 border border-blue-500 rounded-lg p-5 hover:border-blue-300 transition-colors"
+                      className="w-full bg-blue-800 border border-blue-500 rounded-lg p-4 hover:border-blue-300 transition-colors"
                     >
-                      <div className="space-y-4">
+                      <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                          <h4 className="text-blue-200 font-bold text-lg sm:text-xl">{project.name}</h4>
+                          <h4 className="text-blue-200 font-bold text-base">{project.name}</h4>
                         </div>
-                        <p className="text-blue-300 text-sm font-medium">{project.location}</p>
-                        <p className="text-blue-200 text-sm leading-relaxed">{project.description}</p>
+                        <p className="text-blue-300 text-xs font-medium">{project.location}</p>
+                        <p className="text-blue-200 text-xs leading-relaxed">{project.description}</p>
                         {project.url && (
                           <a
                             href={project.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-block w-full text-center px-4 py-3 bg-blue-600 text-white text-sm font-medium hover:bg-blue-500 transition-colors border border-blue-400 rounded"
+                            className="inline-block w-full text-center px-3 py-2 bg-blue-600 text-white text-xs font-medium hover:bg-blue-500 transition-colors border border-blue-400 rounded"
                           >
                             View Project →
                           </a>
@@ -758,11 +831,44 @@ const Index = () => {
                     </div>
                   ))}
               </div>
-              
-              {/* Scroll indicator */}
-              <div className="flex justify-center mt-4">
-                <div className="text-blue-300 text-xs">
-                  Scroll to see more projects
+
+              {/* Desktop: Horizontal Carousel */}
+              <div className="hidden lg:block">
+                <div className="flex overflow-x-auto gap-6 pb-6 scrollbar-hide">
+                  {experiences
+                    .filter(exp => exp.type === 'project' && exp.id !== 'health-economics')
+                    .sort((a, b) => b.impressiveness - a.impressiveness)
+                    .map((project, index) => (
+                      <div 
+                        key={project.id}
+                        className="flex-shrink-0 w-72 sm:w-80 bg-blue-800 border border-blue-500 rounded-lg p-5 hover:border-blue-300 transition-colors"
+                      >
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <h4 className="text-blue-200 font-bold text-lg sm:text-xl">{project.name}</h4>
+                          </div>
+                          <p className="text-blue-300 text-sm font-medium">{project.location}</p>
+                          <p className="text-blue-200 text-sm leading-relaxed">{project.description}</p>
+                          {project.url && (
+                            <a
+                              href={project.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-block w-full text-center px-4 py-3 bg-blue-600 text-white text-sm font-medium hover:bg-blue-500 transition-colors border border-blue-400 rounded"
+                            >
+                              View Project →
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+                
+                {/* Scroll indicator */}
+                <div className="flex justify-center mt-4">
+                  <div className="text-blue-300 text-xs">
+                    Scroll to see more projects
+                  </div>
                 </div>
               </div>
             </div>
