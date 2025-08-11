@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { ComposedChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Line, Legend, Label } from "recharts";
+import { ComposedChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Line, Legend, Label, ReferenceLine } from "recharts";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 
@@ -129,6 +129,13 @@ const CustomShape = (props: any) => {
         opacity={0.7}
       />
     );
+  } else if (type === "cross") {
+    return (
+      <g>
+        <line x1={cx - 4} y1={cy - 4} x2={cx + 4} y2={cy + 4} stroke={fill} strokeWidth={2} opacity={0.7} />
+        <line x1={cx - 4} y1={cy + 4} x2={cx + 4} y2={cy - 4} stroke={fill} strokeWidth={2} opacity={0.7} />
+      </g>
+    );
   } else {
     // circle (default)
     return (
@@ -149,22 +156,34 @@ const typeShapes = {
   "CoT": "square", 
   "CoT + Synthesis": "triangle",
   "Custom": "diamond",
-  "N/A": "circle"
+  "N/A": "cross"
 };
 
 function computePareto(data, metricKey) {
   // Keep only points that have both cost and the chosen metric
   const clean = data
-    .filter(d => typeof d.cost === "number" && typeof d[metricKey] === "number")
-    .sort((a, b) => a.cost - b.cost);
+    .filter(d => typeof d.cost === "number" && typeof d[metricKey] === "number");
   
   const frontier = [];
-  let best = -Infinity;
   
+  // For each point, check if it's dominated by any other point
   for (const pt of clean) {
-    if (pt[metricKey] > best) {
+    let isDominated = false;
+    
+    for (const other of clean) {
+      // A point is dominated if there's another point with:
+      // 1. Lower or equal cost AND higher performance, OR
+      // 2. Lower cost AND equal or higher performance
+      if (other !== pt && 
+          other.cost <= pt.cost && 
+          other[metricKey] > pt[metricKey]) {
+        isDominated = true;
+        break;
+      }
+    }
+    
+    if (!isDominated) {
       frontier.push(pt);
-      best = pt[metricKey];
     }
   }
   
@@ -219,12 +238,23 @@ export default function ArcPPFDashboard() {
   const types = useMemo(() => ["All", ...Array.from(new Set(RAW.map(d => d.type)))], []);
 
   const data = useMemo(() => {
-    return RAW.filter(d => (showHumans ? true : d.org !== "Human"))
+    const filtered = RAW.filter(d => (showHumans ? true : d.org !== "Human"))
       .filter(d => (orgFilter === "All" ? true : d.org === orgFilter))
       .filter(d => (typeFilter === "All" ? true : d.type === typeFilter));
-  }, [showHumans, orgFilter, typeFilter]);
+    
+    const clamped = filtered.map(d => ({
+      ...d,
+      [metric]: typeof d[metric] === 'number' ? Math.min(d[metric], 100) : d[metric]
+    }));
+    
+
+    
+    return clamped;
+  }, [showHumans, orgFilter, typeFilter, metric]);
 
   const frontier = useMemo(() => computePareto(data, metric), [data, metric]);
+  
+
   
   const yLabel = metric === "agi1" ? "ARC-AGI-1 (%)" : "ARC-AGI-2 (%)";
 
@@ -363,31 +393,50 @@ export default function ArcPPFDashboard() {
 
           <div className="h-[500px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>
+              <ComposedChart margin={{ top: 20, right: 30, bottom: 40, left: 40 }} data={data}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <ReferenceLine y={100} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
                 <XAxis
                   type="number"
                   dataKey="cost"
                   name="Cost"
                   scale="log"
-                  domain={["auto", "auto"]}
+                  domain={[0.01, 100]}
                   tickFormatter={(v) => `$${v}`}
                   stroke="hsl(var(--muted-foreground))"
+                  ticks={[0.01, 0.1, 1, 10, 100]}
+                  allowDataOverflow={false}
                 >
-                  <Label value="Cost per task (USD, log scale)" offset={-5} position="insideBottom" fill="hsl(var(--muted-foreground))" />
+                  <Label value="Cost per task (USD, log scale)" offset={-10} position="insideBottom" fill="hsl(var(--muted-foreground))" />
                 </XAxis>
                 <YAxis
                   type="number"
                   dataKey={metric}
                   name={yLabel}
-                  domain={[0, "auto"]}
+                  domain={[0, 100]}
+                  allowDataOverflow={false}
                   stroke="hsl(var(--muted-foreground))"
+                  tickCount={5}
                 >
-                  <Label value={yLabel} angle={-90} position="insideLeft" style={{ textAnchor: "middle" }} fill="hsl(var(--muted-foreground))" />
+                  <Label value={yLabel} angle={-90} position="insideLeft" offset={-10} style={{ textAnchor: "middle" }} fill="hsl(var(--muted-foreground))" />
                 </YAxis>
                 <Tooltip content={<CustomTooltip />} />
                 
-                {/* Render scatter plots for each organization and model type combination */}
+                {/* Frontier line - draw first (underneath) */}
+                {frontier.length > 0 && (
+                  <Line
+                    type="monotone"
+                    data={frontier}
+                    dataKey={metric}
+                    name="PPF"
+                    stroke="hsl(var(--destructive))"
+                    dot={false}
+                    strokeWidth={3}
+                    connectNulls={false}
+                  />
+                )}
+                
+                {/* Render scatter plots for each organization and model type combination - draw last (on top) */}
                 {Object.entries(groupedData).map(([org, orgData]) => {
                   // Group by model type within each organization
                   const typeGroups: any = {};
@@ -409,20 +458,6 @@ export default function ArcPPFDashboard() {
                     />
                   ));
                 })}
-                
-                {/* Frontier line */}
-                {frontier.length > 0 && (
-                  <Line
-                    type="monotone"
-                    data={frontier}
-                    dataKey={metric}
-                    name="PPF"
-                    stroke="hsl(var(--destructive))"
-                    dot={{ r: 4, fill: "hsl(var(--destructive))" }}
-                    strokeWidth={3}
-                    connectNulls={false}
-                  />
-                )}
               </ComposedChart>
             </ResponsiveContainer>
           </div>
@@ -445,11 +480,34 @@ export default function ArcPPFDashboard() {
               <div className="grid grid-cols-2 gap-2 text-sm">
                 {Object.entries(typeShapes).map(([type, shape]) => (
                   <div key={type} className="flex items-center gap-2">
-                    <div className="w-3 h-3" style={{ 
-                      backgroundColor: "hsl(var(--primary))",
-                      borderRadius: shape === "circle" ? "50%" : "0",
-                      transform: shape === "triangle" ? "rotate(45deg)" : shape === "diamond" ? "rotate(45deg)" : "none"
-                    }}></div>
+                    {shape === "circle" && (
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "hsl(var(--primary))" }}></div>
+                    )}
+                    {shape === "square" && (
+                      <div className="w-3 h-3" style={{ backgroundColor: "hsl(var(--primary))" }}></div>
+                    )}
+                    {shape === "triangle" && (
+                      <div className="w-3 h-3" style={{ 
+                        backgroundColor: "hsl(var(--primary))",
+                        clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)"
+                      }}></div>
+                    )}
+                    {shape === "diamond" && (
+                      <div className="w-3 h-3" style={{ 
+                        backgroundColor: "hsl(var(--primary))",
+                        transform: "rotate(45deg)"
+                      }}></div>
+                    )}
+                    {shape === "cross" && (
+                      <div className="w-3 h-3 relative">
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-3 h-0.5" style={{ backgroundColor: "hsl(var(--primary))" }}></div>
+                        </div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-0.5 h-3" style={{ backgroundColor: "hsl(var(--primary))" }}></div>
+                        </div>
+                      </div>
+                    )}
                     <span className="text-muted-foreground">{type}</span>
                   </div>
                 ))}
