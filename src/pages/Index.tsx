@@ -34,6 +34,7 @@ const Index = () => {
   const [gameSpeed, setGameSpeed] = useState(100);
   const [collectedExperiences, setCollectedExperiences] = useState<Experience[]>([]);
   const [showAlert, setShowAlert] = useState(false);
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
 
   const GRID_SIZE = 20;
   const CELL_SIZE = 25;
@@ -220,8 +221,11 @@ const Index = () => {
   }, [gameStarted, gameOver, direction, food, snake]);
 
   useEffect(() => {
-    document.addEventListener('keydown', handleKeyPress);
-    return () => document.removeEventListener('keydown', handleKeyPress);
+    // Only add keyboard listener on desktop
+    if (window.innerWidth >= 1024) {
+      document.addEventListener('keydown', handleKeyPress);
+      return () => document.removeEventListener('keydown', handleKeyPress);
+    }
   }, [handleKeyPress]);
 
   const startGame = () => {
@@ -269,8 +273,49 @@ const Index = () => {
     }
   };
 
+  // Touch controls for mobile
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    setTouchStart({ x: touch.clientX, y: touch.clientY });
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchStart || !gameStarted || gameOver) return;
+
+    const touch = e.changedTouches[0];
+    const deltaX = touch.clientX - touchStart.x;
+    const deltaY = touch.clientY - touchStart.y;
+    const minSwipeDistance = 30; // Minimum distance for a swipe
+
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      // Horizontal swipe
+      if (Math.abs(deltaX) > minSwipeDistance) {
+        if (deltaX > 0 && direction.x === 0) {
+          // Swipe right
+          setDirection({ x: 1, y: 0 });
+        } else if (deltaX < 0 && direction.x === 0) {
+          // Swipe left
+          setDirection({ x: -1, y: 0 });
+        }
+      }
+    } else {
+      // Vertical swipe
+      if (Math.abs(deltaY) > minSwipeDistance) {
+        if (deltaY > 0 && direction.y === 0) {
+          // Swipe down
+          setDirection({ x: 0, y: 1 });
+        } else if (deltaY < 0 && direction.y === 0) {
+          // Swipe up
+          setDirection({ x: 0, y: -1 });
+        }
+      }
+    }
+
+    setTouchStart(null);
+  };
+
   return (
-    <div className="min-h-screen bg-black text-yellow-400 font-mono">
+    <div className="min-h-screen bg-black text-yellow-400 font-mono flex flex-col">
       {/* Navigation Bar */}
       <div className="bg-yellow-900 border-b-2 border-yellow-400 p-4">
         <div className="flex justify-between items-center mb-4">
@@ -285,7 +330,7 @@ const Index = () => {
         <div className="flex flex-wrap gap-3 justify-center">
           <Link
             to="/thoughts"
-            className="px-4 py-2 bg-yellow-600 text-black font-bold hover:bg-yellow-700 transition-colors border border-yellow-400 rounded"
+            className="px-4 py-2 bg-yellow-600 text-white font-bold hover:bg-yellow-700 transition-colors border border-yellow-400 rounded"
           >
             📝 Writings
           </Link>
@@ -349,9 +394,9 @@ const Index = () => {
         </div>
       )}
 
-      <div className="flex">
+      <div className="flex flex-1">
         {/* Game Board */}
-        <div className="flex-1 p-4">
+        <div className="flex-1 p-4 flex flex-col justify-center">
           {!gameStarted ? (
             <div className="text-center space-y-6">
               {/* Intro Section */}
@@ -392,10 +437,10 @@ const Index = () => {
               </button>
             </div>
           ) : (
-            <div className="flex justify-center">
+            <div className="flex flex-col items-center space-y-4">
               {/* Game Grid */}
               <div 
-                className="border-2 border-yellow-400 bg-black"
+                className="border-2 border-yellow-400 bg-black lg:scale-125 xl:scale-150"
                 style={{
                   width: GRID_SIZE * CELL_SIZE,
                   height: GRID_SIZE * CELL_SIZE,
@@ -403,6 +448,8 @@ const Index = () => {
                   gridTemplateColumns: `repeat(${GRID_SIZE}, ${CELL_SIZE}px)`,
                   gridTemplateRows: `repeat(${GRID_SIZE}, ${CELL_SIZE}px)`
                 }}
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
               >
                 {/* Grid cells */}
                 {Array.from({ length: GRID_SIZE * GRID_SIZE }, (_, i) => {
@@ -442,6 +489,44 @@ const Index = () => {
                     </div>
                   );
                 })}
+              </div>
+
+              {/* Mobile Direction Controls */}
+              <div className="lg:hidden">
+                <div className="text-center mb-2">
+                  <p className="text-yellow-300 text-sm">Swipe or use buttons to control</p>
+                </div>
+                <div className="grid grid-cols-3 gap-2 max-w-xs mx-auto">
+                  {/* Up */}
+                  <div></div>
+                  <button
+                    onClick={() => gameStarted && !gameOver && direction.y === 0 && setDirection({ x: 0, y: -1 })}
+                    className="w-12 h-12 bg-yellow-600 text-black font-bold border-2 border-yellow-400 rounded-lg hover:bg-yellow-500 transition-colors flex items-center justify-center"
+                  >
+                    ↑
+                  </button>
+                  <div></div>
+                  
+                  {/* Left, Down, Right */}
+                  <button
+                    onClick={() => gameStarted && !gameOver && direction.x === 0 && setDirection({ x: -1, y: 0 })}
+                    className="w-12 h-12 bg-yellow-600 text-black font-bold border-2 border-yellow-400 rounded-lg hover:bg-yellow-500 transition-colors flex items-center justify-center"
+                  >
+                    ←
+                  </button>
+                  <button
+                    onClick={() => gameStarted && !gameOver && direction.y === 0 && setDirection({ x: 0, y: 1 })}
+                    className="w-12 h-12 bg-yellow-600 text-black font-bold border-2 border-yellow-400 rounded-lg hover:bg-yellow-500 transition-colors flex items-center justify-center"
+                  >
+                    ↓
+                  </button>
+                  <button
+                    onClick={() => gameStarted && !gameOver && direction.x === 0 && setDirection({ x: 1, y: 0 })}
+                    className="w-12 h-12 bg-yellow-600 text-black font-bold border-2 border-yellow-400 rounded-lg hover:bg-yellow-500 transition-colors flex items-center justify-center"
+                  >
+                    →
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -501,7 +586,7 @@ const Index = () => {
         </div>
 
         {/* Experience Info Panel */}
-        <div className="w-96 bg-yellow-900 border-l-2 border-yellow-400 p-4 overflow-y-auto">
+        <div className="w-96 bg-yellow-900 border-l-2 border-yellow-400 p-4 overflow-y-auto flex flex-col justify-center">
           {selectedExperience ? (
             <div className="space-y-4">
               <div className="flex justify-between items-center">
@@ -635,6 +720,53 @@ const Index = () => {
                 </div>
               </div>
           )}
+
+          {/* Projects Carousel */}
+          <div className="mt-8 p-6 bg-blue-900 border-2 border-blue-400 rounded-lg">
+            <div className="text-center mb-6">
+              <div className="text-3xl mb-2">🚀</div>
+              <h3 className="text-xl font-bold text-blue-300">PROJECTS</h3>
+            </div>
+            
+            <div className="relative">
+              <div className="flex overflow-x-auto gap-6 pb-6 scrollbar-hide">
+                {experiences
+                  .filter(exp => exp.type === 'project' && exp.id !== 'health-economics')
+                  .sort((a, b) => b.impressiveness - a.impressiveness)
+                  .map((project, index) => (
+                    <div 
+                      key={project.id}
+                      className="flex-shrink-0 w-72 sm:w-80 bg-blue-800 border border-blue-500 rounded-lg p-5 hover:border-blue-300 transition-colors"
+                    >
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-blue-200 font-bold text-lg sm:text-xl">{project.name}</h4>
+                        </div>
+                        <p className="text-blue-300 text-sm font-medium">{project.location}</p>
+                        <p className="text-blue-200 text-sm leading-relaxed">{project.description}</p>
+                        {project.url && (
+                          <a
+                            href={project.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block w-full text-center px-4 py-3 bg-blue-600 text-white text-sm font-medium hover:bg-blue-500 transition-colors border border-blue-400 rounded"
+                          >
+                            View Project →
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+              
+              {/* Scroll indicator */}
+              <div className="flex justify-center mt-4">
+                <div className="text-blue-300 text-xs">
+                  Scroll to see more projects
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

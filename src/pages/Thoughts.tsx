@@ -41,7 +41,7 @@ const Thoughts = () => {
         <div className="flex flex-wrap gap-3 justify-center">
           <Link
             to="/"
-            className="px-4 py-2 bg-yellow-600 text-black font-bold hover:bg-yellow-700 transition-colors border border-yellow-400 rounded"
+            className="px-4 py-2 bg-black text-white font-bold hover:bg-gray-800 transition-colors border border-yellow-400 rounded"
           >
             🏠 Home
           </Link>
