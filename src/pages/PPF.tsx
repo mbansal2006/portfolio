@@ -332,7 +332,7 @@ export default function ArcPPFDashboard() {
 
         {/* Header */}
         <header className="mb-16">
-          <h1 className="text-5xl font-bold text-foreground mb-4">AI Intelligence Frontier</h1>
+          <h1 className="text-5xl font-bold text-foreground mb-4">AI Frontier</h1>
           <p className="text-xl text-muted-foreground leading-relaxed mb-6">
             A Production Possibilities Frontier (PPF) visualization of AI performance vs. cost using data from the <a href="https://arcprize.org/leaderboard" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 underline underline-offset-2">ARC Prize leaderboard</a>.
           </p>
