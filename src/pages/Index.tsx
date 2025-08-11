@@ -64,21 +64,21 @@ const Index = () => {
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <h3 className="text-xl font-medium text-foreground">
-                  <a href="https://krypte.ai" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                  <a href="https://www.krypte.ai" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
                     Krypte
                   </a>
                 </h3>
                 <span className="px-2 py-1 text-xs bg-primary/20 text-primary rounded-md">in progress</span>
               </div>
               <p className="text-muted-foreground leading-relaxed">
-  Something new. Join waitlist at{" "}
+  AI without the trust burden. See {" "}
   <a
     href="https://krypte.ai"
     target="_blank"
     rel="noopener noreferrer"
     className="inline-flex items-center rounded-full bg-yellow-400/10 px-2 py-0.5 text-xs font-medium text-yellow-400 ring-1 ring-inset ring-yellow-400/20"
   >
-    krypte.ai
+    www.krypte.ai
   </a>
 </p>
               <p className="text-sm text-muted-foreground">
