@@ -8,9 +8,7 @@ export const essays: Essay[] = [
     excerpt: "I've been thinking about where we're headed—about what happens as intelligence keeps scaling, as AI gets smarter, and the cost of thinking drops toward zero. This essay is me trying to make sense of that.",
     downloadLink: "https://drive.google.com/file/d/1Zne_SWC4urSc2pgq-zX6hoJu5L9J8xP_/view?usp=sharing",
     content: `
-      <div class="min-h-screen bg-background">
-      <div class="container mx-auto px-6 py-12 max-w-4xl">
-        <div class="mb-12">
+
           <p class="text-lg text-muted-foreground leading-relaxed mb-6">
             I've been thinking about where we're headed-about what happens as intelligence keeps scaling, as AI gets smarter, and the cost of thinking drops toward zero. This essay is me trying to make sense of that. It’s not a roadmap or a manifesto. Just thoughts- on evolution, memory, purpose, markets, creation, maybe even God. I don’t think I know anything for sure. But I care a lot, and I’m trying to be honest. Take what you will. Ideally, with a lot of skepticism.
           </p>
@@ -2223,7 +2221,6 @@ export const essays: Essay[] = [
   excerpt: "Without care, an AI might sound smart, but it won’t know what to hold onto. It’ll generate endlessly, but forget what it’s trying to preserve. It’ll respond, but never reflect.",
   downloadLink: "https://drive.google.com/file/d/1ZnY1Dy_0pSYyxLe4-Bi9jYAVNTUpoo8A/view?usp=sharing",
   content: `
-    <div className="space-y-6 prose prose-lg prose-invert max-w-none p-8">
       <h1>The First Machine That Cared</h1>
 
       <p>The printing press revolutionized how knowledge spread. It made books cheap, fast, and widely available—breaking the monopoly of elites and igniting the information age. Later, we saw that transformation accelerate, as data flooded in, power decentralized, and the ways we learn, connect, and decide were reshaped.</p>
@@ -2379,7 +2376,6 @@ export const essays: Essay[] = [
   excerpt: "What if “everything happens for a reason” isn’t just some platitude — but a structural truth? Not spiritual. Not moral. Not emotional. Just geometric.",
   downloadLink: "https://drive.google.com/file/d/1jRmD6_dAVfsOZ08WKT0RhE1DRS0x8omS/view?usp=sharing",
   content: `
-    <div className="space-y-6 prose prose-lg prose-invert max-w-none p-8">
   <h1>Why Things Must Happen</h1>
 
   <p>We’ll often say “everything happens for a reason.” It’s often emotional — to comfort someone, to soften something painful, to make sense of chaos. Sometimes we need that.</p>
@@ -2509,7 +2505,6 @@ export const essays: Essay[] = [
   <p>I don't think any of this should mean you should accept everything without feeling. Or stop asking why. But it might help to remember: the world isn’t glitching. It’s just geometry. Strange, beautiful, brutal geometry.</p>
 
   <p>And maybe the only way to understand that geometry is to remember and imagine. To reflect. To innovate. To look across time.</p>
-</div>
     `
 }
 ];

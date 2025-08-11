@@ -27,28 +27,68 @@ const Thoughts = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b border-essay-card-border bg-gradient-card">
-        <div className="max-w-7xl mx-auto px-6 py-12 lg:py-20">
-          <div className="text-center space-y-6">
-            <div className="inline-flex items-center gap-2 text-primary text-sm font-medium bg-primary/10 px-4 py-2 rounded-full border border-primary/20">
-              <PenTool className="w-4 h-4" />
-              Essays & Thoughts
-            </div>
-            <h1 className="text-4xl lg:text-6xl font-bold text-foreground leading-tight">
-              Writing
-            </h1>
-            <div className="flex justify-center">
-              <Link
-                to="/"
-                className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Back to portfolio
-              </Link>
-            </div>
+    <div className="min-h-screen bg-black text-yellow-400 font-mono">
+      {/* Navigation Bar */}
+      <div className="bg-yellow-900 border-b-2 border-yellow-400 p-4">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl font-bold">MAHIR BANSAL</h1>
+          <div className="text-right">
+            <div className="text-sm">Essays & Thoughts</div>
           </div>
+        </div>
+        
+        {/* Navigation Links */}
+        <div className="flex flex-wrap gap-3 justify-center">
+          <Link
+            to="/"
+            className="px-4 py-2 bg-yellow-600 text-black font-bold hover:bg-yellow-700 transition-colors border border-yellow-400 rounded"
+          >
+            🏠 Home
+          </Link>
+          <Link
+            to="/frontier"
+            className="px-4 py-2 bg-orange-600 text-white font-bold hover:bg-orange-700 transition-colors border border-orange-400 rounded"
+          >
+            🤖 AI Frontier
+          </Link>
+          <a
+            href="https://www.krypte.ai"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 bg-purple-600 text-white font-bold hover:bg-purple-700 transition-colors border border-purple-400 rounded"
+          >
+            🛡️ Krypte
+          </a>
+          <a
+            href="https://www.linkedin.com/in/mahirbansal/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors border border-blue-400 rounded"
+          >
+            💼 LinkedIn
+          </a>
+          <a
+            href="mailto:mb@mahirbansal.com"
+            className="px-4 py-2 bg-red-600 text-white font-bold hover:bg-red-700 transition-colors border border-red-400 rounded"
+          >
+            📧 Email
+          </a>
+        </div>
+      </div>
+
+      {/* Header */}
+      <div className="max-w-7xl mx-auto px-6 py-12 lg:py-16">
+        <div className="text-center space-y-6">
+          <div className="inline-flex items-center gap-2 text-yellow-400 text-sm font-medium bg-yellow-900 px-4 py-2 rounded-full border border-yellow-400">
+            <PenTool className="w-4 h-4" />
+            Essays & Thoughts
+          </div>
+          <h1 className="text-4xl lg:text-6xl font-bold text-yellow-300 leading-tight">
+            Writing
+          </h1>
+          <p className="text-xl text-yellow-200 max-w-3xl mx-auto leading-relaxed">
+            Exploring the intersection of technology, government, and markets through essays on AI, policy, and the future we're building.
+          </p>
         </div>
       </div>
 
@@ -63,7 +103,12 @@ const Thoughts = () => {
             />
           ))}
         </div>
+      </div>
 
+      {/* Footer */}
+      <div className="border-t-2 border-yellow-400 p-4 text-center text-yellow-300">
+        <p className="font-bold">THANK YOU</p>
+        <p className="text-sm mt-1">Technology • Government • Markets</p>
       </div>
     </div>
   );

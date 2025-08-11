@@ -317,30 +317,67 @@ export default function ArcPPFDashboard() {
   }, [finalData]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-6 py-12 max-w-7xl">
-        {/* Navigation */}
-        <nav className="mb-8">
-          <Link 
-            to="/" 
-            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+    <div className="min-h-screen bg-black text-yellow-400 font-mono">
+      {/* Navigation Bar */}
+      <div className="bg-yellow-900 border-b-2 border-yellow-400 p-4">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl font-bold">MAHIR BANSAL</h1>
+          <div className="text-right">
+            <div className="text-sm">AI Frontier</div>
+          </div>
+        </div>
+        
+        {/* Navigation Links */}
+        <div className="flex flex-wrap gap-3 justify-center">
+          <Link
+            to="/"
+            className="px-4 py-2 bg-yellow-600 text-black font-bold hover:bg-yellow-700 transition-colors border border-yellow-400 rounded"
           >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Home
+            🏠 Home
           </Link>
-        </nav>
+          <Link
+            to="/thoughts"
+            className="px-4 py-2 bg-yellow-600 text-black font-bold hover:bg-yellow-700 transition-colors border border-yellow-400 rounded"
+          >
+            📝 Writings
+          </Link>
+          <a
+            href="https://www.krypte.ai"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 bg-purple-600 text-white font-bold hover:bg-purple-700 transition-colors border border-purple-400 rounded"
+          >
+            🛡️ Krypte
+          </a>
+          <a
+            href="https://www.linkedin.com/in/mahirbansal/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors border border-blue-400 rounded"
+          >
+            💼 LinkedIn
+          </a>
+          <a
+            href="mailto:mb@mahirbansal.com"
+            className="px-4 py-2 bg-red-600 text-white font-bold hover:bg-red-700 transition-colors border border-red-400 rounded"
+          >
+            📧 Email
+          </a>
+        </div>
+      </div>
 
+      <div className="container mx-auto px-6 py-12 max-w-7xl">
         {/* Header */}
         <header className="mb-16">
-          <h1 className="text-5xl font-bold text-foreground mb-4">AI Frontier</h1>
-          <p className="text-xl text-muted-foreground leading-relaxed mb-6">
-            A Production Possibilities Frontier (PPF) visualization of AI performance vs. cost using data from the <a href="https://arcprize.org/leaderboard" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 underline underline-offset-2">ARC Prize leaderboard</a>.
+          <h1 className="text-5xl font-bold text-yellow-300 mb-4">AI Frontier</h1>
+          <p className="text-xl text-white leading-relaxed mb-6">
+            A Production Possibilities Frontier (PPF) visualization of AI performance vs. cost using data from the <a href="https://arcprize.org/leaderboard" target="_blank" rel="noopener noreferrer" className="text-yellow-400 hover:text-yellow-300 underline underline-offset-2">ARC Prize leaderboard</a>.
           </p>
           
           {/* PPF Explanation */}
           <div className="space-y-6 mb-8">
-            <div className="space-y-4 text-muted-foreground leading-relaxed">
-              <h2 className="text-3xl font-semibold text-foreground mb-6">What is a Production Possibilities Frontier?</h2>
+            <div className="space-y-4 text-white leading-relaxed">
+              <h2 className="text-3xl font-semibold text-yellow-300 mb-6">What is a Production Possibilities Frontier?</h2>
               <p>
                 A Production Possibilities Frontier (PPF) is an economic concept that shows the maximum possible combinations of two goods or services that can be produced with given resources and technology. In this case, we're mapping <strong>AI performance</strong> against <strong>computational cost</strong>.
               </p>
@@ -359,8 +396,8 @@ export default function ArcPPFDashboard() {
             </div>
 
             {/* ARC Prize Context */}
-            <div className="space-y-4 text-muted-foreground leading-relaxed">
-              <h2 className="text-3xl font-semibold text-foreground mb-6">About the ARC Prize Data</h2>
+            <div className="space-y-4 text-white leading-relaxed">
+              <h2 className="text-3xl font-semibold text-yellow-300 mb-6">About the ARC Prize Data</h2>
               <p>
                 The ARC Prize evaluates AI systems on two key benchmarks:
               </p>
@@ -378,23 +415,23 @@ export default function ArcPPFDashboard() {
         {/* Controls */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
           <div className="space-y-2">
-            <label className="block text-sm text-muted-foreground">Metric</label>
+            <label className="block text-sm text-yellow-300">Metric</label>
             <div className="flex gap-2">
               <button
-                className={`px-3 py-2 rounded-md text-sm transition-colors ${metric === "agi1" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-accent"}`}
+                className={`px-3 py-2 rounded-md text-sm transition-colors ${metric === "agi1" ? "bg-yellow-600 text-black" : "bg-yellow-900 text-yellow-300 hover:bg-yellow-800"}`}
                 onClick={() => setMetric("agi1")}
               >ARC‑AGI‑1</button>
               <button
-                className={`px-3 py-2 rounded-md text-sm transition-colors ${metric === "agi2" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-accent"}`}
+                className={`px-3 py-2 rounded-md text-sm transition-colors ${metric === "agi2" ? "bg-yellow-600 text-black" : "bg-yellow-900 text-yellow-300 hover:bg-yellow-800"}`}
                 onClick={() => setMetric("agi2")}
               >ARC‑AGI‑2</button>
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm text-muted-foreground">Organization</label>
+            <label className="block text-sm text-yellow-300">Organization</label>
             <select
-              className="w-full bg-secondary text-secondary-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full bg-yellow-900 text-yellow-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400 border border-yellow-600"
               value={orgFilter} onChange={e => setOrgFilter(e.target.value)}
             >
               {orgs.map(o => (<option key={o} value={o}>{o}</option>))}
@@ -402,9 +439,9 @@ export default function ArcPPFDashboard() {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm text-muted-foreground">System Type</label>
+            <label className="block text-sm text-yellow-300">System Type</label>
             <select
-              className="w-full bg-secondary text-secondary-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full bg-yellow-900 text-yellow-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400 border border-yellow-600"
               value={typeFilter} onChange={e => setTypeFilter(e.target.value)}
             >
               {types.map(t => (<option key={t} value={t}>{t}</option>))}
@@ -412,9 +449,9 @@ export default function ArcPPFDashboard() {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm text-muted-foreground">Country</label>
+            <label className="block text-sm text-yellow-300">Country</label>
             <select
-              className="w-full bg-secondary text-secondary-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full bg-yellow-900 text-yellow-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400 border border-yellow-600"
               value={countryFilter} onChange={e => setCountryFilter(e.target.value)}
             >
               {countries.map(c => (<option key={c} value={c}>{c}</option>))}
@@ -422,34 +459,34 @@ export default function ArcPPFDashboard() {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm text-muted-foreground">Options</label>
+            <label className="block text-sm text-yellow-300">Options</label>
             <div className="flex flex-col gap-2">
-              <label className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+              <label className="inline-flex items-center gap-2 text-sm text-yellow-300">
                 <input
-                  type="checkbox" className="accent-primary"
+                  type="checkbox" className="accent-yellow-400"
                   checked={showHumans} onChange={(e) => setShowHumans(e.target.checked)}
                 /> Include humans
               </label>
-              <label className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+              <label className="inline-flex items-center gap-2 text-sm text-yellow-300">
                 <input
-                  type="checkbox" className="accent-primary"
+                  type="checkbox" className="accent-yellow-400"
                   checked={showParetoOnly} onChange={(e) => setShowParetoOnly(e.target.checked)}
                 /> Pareto-efficient only
               </label>
               <button
                 onClick={() => downloadCSV(finalData)}
-                className="px-3 py-2 rounded-md bg-primary text-primary-foreground text-sm hover:bg-primary/90 transition-colors"
+                className="px-3 py-2 rounded-md bg-yellow-600 text-black text-sm hover:bg-yellow-700 transition-colors"
               >Download CSV</button>
             </div>
           </div>
         </div>
 
         {/* Chart */}
-        <div className="bg-card border border-border rounded-lg p-6 mb-8">
+        <div className="bg-gray-900 border border-gray-700 rounded-lg p-6 mb-8">
           <div className="flex items-end justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-semibold text-foreground mb-2">PPF: {yLabel} vs Cost</h2>
-              <p className="text-muted-foreground">X axis uses a log scale. Points on the red curve are Pareto‑efficient for the chosen metric.</p>
+              <h2 className="text-2xl font-semibold text-yellow-300 mb-2">PPF: {yLabel} vs Cost</h2>
+              <p className="text-white">X axis uses a log scale. Points on the red curve are Pareto‑efficient for the chosen metric.</p>
             </div>
           </div>
 
@@ -527,50 +564,50 @@ export default function ArcPPFDashboard() {
           {/* Legend */}
           <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h3 className="text-lg font-semibold text-foreground mb-3">Organizations (Colors & Flags)</h3>
+              <h3 className="text-lg font-semibold text-yellow-300 mb-3">Organizations (Colors & Flags)</h3>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 {Object.entries(orgColors).map(([org, color]) => (
                   <div key={org} className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }}></div>
-                    <span className="text-muted-foreground">{orgFlags[org] || "🌍"} {org}</span>
+                    <span className="text-white">{orgFlags[org] || "🌍"} {org}</span>
                   </div>
                 ))}
               </div>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-foreground mb-3">Model Types (Shapes)</h3>
+              <h3 className="text-lg font-semibold text-yellow-300 mb-3">Model Types (Shapes)</h3>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 {Object.entries(typeShapes).map(([type, shape]) => (
                   <div key={type} className="flex items-center gap-2">
                     {shape === "circle" && (
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "hsl(var(--primary))" }}></div>
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#fbbf24" }}></div>
                     )}
                     {shape === "square" && (
-                      <div className="w-3 h-3" style={{ backgroundColor: "hsl(var(--primary))" }}></div>
+                      <div className="w-3 h-3" style={{ backgroundColor: "#fbbf24" }}></div>
                     )}
                     {shape === "triangle" && (
                       <div className="w-3 h-3" style={{ 
-                        backgroundColor: "hsl(var(--primary))",
+                        backgroundColor: "#fbbf24",
                         clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)"
                       }}></div>
                     )}
                     {shape === "diamond" && (
                       <div className="w-3 h-3" style={{ 
-                        backgroundColor: "hsl(var(--primary))",
+                        backgroundColor: "#fbbf24",
                         transform: "rotate(45deg)"
                       }}></div>
                     )}
                     {shape === "cross" && (
                       <div className="w-3 h-3 relative">
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="w-3 h-0.5" style={{ backgroundColor: "hsl(var(--primary))" }}></div>
+                          <div className="w-3 h-0.5" style={{ backgroundColor: "#fbbf24" }}></div>
                         </div>
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="w-0.5 h-3" style={{ backgroundColor: "hsl(var(--primary))" }}></div>
+                          <div className="w-0.5 h-3" style={{ backgroundColor: "#fbbf24" }}></div>
                         </div>
                       </div>
                     )}
-                    <span className="text-muted-foreground">{type}</span>
+                    <span className="text-white">{type}</span>
                   </div>
                 ))}
               </div>
@@ -579,12 +616,12 @@ export default function ArcPPFDashboard() {
         </div>
 
         {/* Table */}
-        <div className="bg-card border border-border rounded-lg p-6">
-          <h3 className="text-xl font-semibold text-foreground mb-4">Data (sorted by cost)</h3>
+        <div className="bg-yellow-900 border border-yellow-400 rounded-lg p-6">
+          <h3 className="text-xl font-semibold text-yellow-300 mb-4">Data (sorted by cost)</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-muted-foreground border-b border-border">
+                <tr className="text-white border-b border-yellow-600">
                   <th className="text-left font-medium p-3">System</th>
                   <th className="text-left font-medium p-3">Org</th>
                   <th className="text-left font-medium p-3">Country</th>
@@ -600,16 +637,16 @@ export default function ArcPPFDashboard() {
                   const onFrontier = !!frontier.find(f => f.system === d.system);
                   const countryFlag = orgFlags[d.org] || "🌍";
                   return (
-                    <tr key={d.system} className="border-b border-border hover:bg-accent/50 transition-colors">
-                      <td className="p-3 whitespace-nowrap text-foreground">{d.system}</td>
-                      <td className="p-3 whitespace-nowrap text-muted-foreground">{d.org}</td>
-                      <td className="p-3 whitespace-nowrap text-muted-foreground">{countryFlag}</td>
-                      <td className="p-3 whitespace-nowrap text-muted-foreground">{d.type}</td>
-                      <td className="p-3 text-right text-muted-foreground">${numberFmt(d.cost)}</td>
-                      <td className="p-3 text-right text-muted-foreground">{numberFmt(d.agi1)}</td>
-                      <td className="p-3 text-right text-muted-foreground">{numberFmt(d.agi2)}</td>
+                    <tr key={d.system} className="border-b border-yellow-600 hover:bg-yellow-800 transition-colors">
+                      <td className="p-3 whitespace-nowrap text-white">{d.system}</td>
+                      <td className="p-3 whitespace-nowrap text-white">{d.org}</td>
+                      <td className="p-3 whitespace-nowrap text-white">{countryFlag}</td>
+                      <td className="p-3 whitespace-nowrap text-white">{d.type}</td>
+                      <td className="p-3 text-right text-white">${numberFmt(d.cost)}</td>
+                      <td className="p-3 text-right text-white">{numberFmt(d.agi1)}</td>
+                      <td className="p-3 text-right text-white">{numberFmt(d.agi2)}</td>
                       <td className="p-3 text-right">
-                        {onFrontier ? <span className="text-primary font-semibold">✓</span> : ""}
+                        {onFrontier ? <span className="text-yellow-400 font-semibold">✓</span> : ""}
                       </td>
                     </tr>
                   );
@@ -619,10 +656,16 @@ export default function ArcPPFDashboard() {
           </div>
         </div>
 
-        <footer className="text-muted-foreground text-sm mt-8 pt-8 border-t border-border">
+        <footer className="text-white text-sm mt-8 pt-8 border-t border-yellow-400">
           <p>Tip: Switch to ARC‑AGI‑2 to see how the frontier shifts for robustness under stricter evaluations. You can also include or exclude humans from the plot.</p>
-          <p className="mt-2">Data source: <a href="https://arcprize.org/leaderboard" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 underline underline-offset-2">ARC Prize Leaderboard</a></p>
+          <p className="mt-2">Data source: <a href="https://arcprize.org/leaderboard" target="_blank" rel="noopener noreferrer" className="text-yellow-400 hover:text-yellow-300 underline underline-offset-2">ARC Prize Leaderboard</a></p>
         </footer>
+      </div>
+
+      {/* Footer */}
+      <div className="border-t-2 border-yellow-400 p-4 text-center text-yellow-300">
+        <p className="font-bold">THANK YOU</p>
+        <p className="text-sm mt-1">Technology • Government • Markets</p>
       </div>
     </div>
   );
