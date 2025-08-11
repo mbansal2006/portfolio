@@ -84,68 +84,96 @@ const RAW = [
   { system: "GPT-5 Nano (Minimal)", org: "OpenAI", type: "CoT", agi1: 1.5, agi2: 0.0, cost: 0.003 },
 ];
 
-// Color mapping for organizations
+// Color mapping for organizations - all very distinct
 const orgColors = {
-  "OpenAI": "#10a37f",
-  "Anthropic": "#d97706", 
-  "Google": "#dc2626",
-  "xAI": "#7c3aed",
-  "Meta": "#0891b2",
-  "Deepseek": "#059669",
-  "Alibaba": "#ea580c",
-  "Mistral": "#be185d",
-  "ARC Prize 2024": "#f59e0b",
-  "Human": "#6b7280"
+  "OpenAI": "#10a37f",      // Green
+  "Anthropic": "#dc2626",   // Red
+  "Google": "#3b82f6",      // Blue
+  "xAI": "#8b5cf6",         // Purple
+  "Meta": "#06b6d4",        // Cyan
+  "Deepseek": "#f59e0b",    // Orange
+  "Alibaba": "#fbbf24",     // Yellow
+  "Mistral": "#ec4899",     // Pink
+  "ARC Prize 2024": "#84cc16", // Lime Green
+  "Human": "#6b7280"        // Gray
+};
+
+// Country flag mapping for organizations
+const orgFlags = {
+  "OpenAI": "🇺🇸",
+  "Anthropic": "🇺🇸", 
+  "Google": "🇺🇸",
+  "xAI": "🇺🇸",
+  "Meta": "🇺🇸",
+  "Deepseek": "🇨🇳",
+  "Alibaba": "🇨🇳",
+  "Mistral": "🇫🇷",
+  "ARC Prize 2024": "🌍",
+  "Human": "🌍"
 };
 
 // Custom shape components for different model types
 const CustomShape = (props: any) => {
-  const { cx, cy, type, fill } = props;
+  const { cx, cy, type, fill, org } = props;
+  const flag = orgFlags[org] || "🌍";
   
   if (type === "square") {
     return (
-      <rect
-        x={cx - 4}
-        y={cy - 4}
-        width={8}
-        height={8}
-        fill={fill}
-        opacity={0.7}
-      />
+      <g>
+        <rect
+          x={cx - 6}
+          y={cy - 6}
+          width={12}
+          height={12}
+          fill={fill}
+          opacity={0.9}
+        />
+        <text x={cx} y={cy - 8} textAnchor="middle" fontSize="16" fill="hsl(var(--foreground))" fontWeight="bold">{flag}</text>
+      </g>
     );
   } else if (type === "triangle") {
     return (
-      <polygon
-        points={`${cx},${cy - 4} ${cx - 4},${cy + 4} ${cx + 4},${cy + 4}`}
-        fill={fill}
-        opacity={0.7}
-      />
+      <g>
+        <polygon
+          points={`${cx},${cy - 6} ${cx - 6},${cy + 6} ${cx + 6},${cy + 6}`}
+          fill={fill}
+          opacity={0.9}
+        />
+        <text x={cx} y={cy - 8} textAnchor="middle" fontSize="16" fill="hsl(var(--foreground))" fontWeight="bold">{flag}</text>
+      </g>
     );
   } else if (type === "diamond") {
     return (
-      <polygon
-        points={`${cx},${cy - 4} ${cx - 4},${cy} ${cx},${cy + 4} ${cx + 4},${cy}`}
-        fill={fill}
-        opacity={0.7}
-      />
+      <g>
+        <polygon
+          points={`${cx},${cy - 6} ${cx - 6},${cy} ${cx},${cy + 6} ${cx + 6},${cy}`}
+          fill={fill}
+          opacity={0.9}
+        />
+        <text x={cx} y={cy - 8} textAnchor="middle" fontSize="16" fill="hsl(var(--foreground))" fontWeight="bold">{flag}</text>
+      </g>
     );
   } else if (type === "cross") {
     return (
       <g>
-        <line x1={cx - 4} y1={cy - 4} x2={cx + 4} y2={cy + 4} stroke={fill} strokeWidth={2} opacity={0.7} />
-        <line x1={cx - 4} y1={cy + 4} x2={cx + 4} y2={cy - 4} stroke={fill} strokeWidth={2} opacity={0.7} />
+        <line x1={cx - 6} y1={cy - 6} x2={cx + 6} y2={cy + 6} stroke={fill} strokeWidth={2} opacity={0.9} />
+        <line x1={cx - 6} y1={cy + 6} x2={cx + 6} y2={cy - 6} stroke={fill} strokeWidth={2} opacity={0.9} />
+        <text x={cx} y={cy - 8} textAnchor="middle" fontSize="16" fill="hsl(var(--foreground))" fontWeight="bold">{flag}</text>
       </g>
     );
   } else {
     // circle (default)
     return (
-      <circle
-        cx={cx}
-        cy={cy}
-        r={4}
-        fill={fill}
-        opacity={0.7}
-      />
+      <g>
+        <circle
+          cx={cx}
+          cy={cy}
+          r={6}
+          fill={fill}
+          opacity={0.9}
+        />
+        <text x={cx} y={cy - 8} textAnchor="middle" fontSize="16" fill="hsl(var(--foreground))" fontWeight="bold">{flag}</text>
+      </g>
     );
   }
 };
@@ -233,26 +261,44 @@ export default function ArcPPFDashboard() {
   const [showHumans, setShowHumans] = useState(true); // Changed to true by default
   const [orgFilter, setOrgFilter] = useState("All");
   const [typeFilter, setTypeFilter] = useState("All");
+  const [countryFilter, setCountryFilter] = useState("All");
+  const [showParetoOnly, setShowParetoOnly] = useState(false);
 
   const orgs = useMemo(() => ["All", ...Array.from(new Set(RAW.map(d => d.org)))], []);
   const types = useMemo(() => ["All", ...Array.from(new Set(RAW.map(d => d.type)))], []);
+  const countries = useMemo(() => ["All", "🇺🇸 United States", "🇨🇳 China", "🇫🇷 France", "🌍 International"], []);
 
   const data = useMemo(() => {
     const filtered = RAW.filter(d => (showHumans ? true : d.org !== "Human"))
       .filter(d => (orgFilter === "All" ? true : d.org === orgFilter))
-      .filter(d => (typeFilter === "All" ? true : d.type === typeFilter));
+      .filter(d => (typeFilter === "All" ? true : d.type === typeFilter))
+      .filter(d => {
+        if (countryFilter === "All") return true;
+        if (d.org === "Human") return true; // Always include humans regardless of country filter
+        const orgFlag = orgFlags[d.org] || "🌍";
+        const countryName = countryFilter.split(" ").slice(1).join(" "); // Extract country name from "🇺🇸 United States"
+        if (countryName === "United States") return orgFlag === "🇺🇸";
+        if (countryName === "China") return orgFlag === "🇨🇳";
+        if (countryName === "France") return orgFlag === "🇫🇷";
+        if (countryName === "International") return orgFlag === "🌍";
+        return true;
+      });
     
     const clamped = filtered.map(d => ({
       ...d,
       [metric]: typeof d[metric] === 'number' ? Math.min(d[metric], 100) : d[metric]
     }));
     
-
-    
     return clamped;
-  }, [showHumans, orgFilter, typeFilter, metric]);
+  }, [showHumans, orgFilter, typeFilter, countryFilter, metric]);
 
   const frontier = useMemo(() => computePareto(data, metric), [data, metric]);
+
+  // Apply Pareto filter after computing frontier
+  const finalData = useMemo(() => {
+    if (!showParetoOnly) return data;
+    return data.filter(d => frontier.some(f => f.system === d.system));
+  }, [data, frontier, showParetoOnly]);
   
 
   
@@ -261,14 +307,14 @@ export default function ArcPPFDashboard() {
   // Group data by organization for different colors
   const groupedData = useMemo(() => {
     const groups = {};
-    data.forEach(d => {
+    finalData.forEach(d => {
       if (!groups[d.org]) {
         groups[d.org] = [];
       }
       groups[d.org].push(d);
     });
     return groups;
-  }, [data]);
+  }, [finalData]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -330,7 +376,7 @@ export default function ArcPPFDashboard() {
         </header>
 
         {/* Controls */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
           <div className="space-y-2">
             <label className="block text-sm text-muted-foreground">Metric</label>
             <div className="flex gap-2">
@@ -366,16 +412,32 @@ export default function ArcPPFDashboard() {
           </div>
 
           <div className="space-y-2">
+            <label className="block text-sm text-muted-foreground">Country</label>
+            <select
+              className="w-full bg-secondary text-secondary-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
+              value={countryFilter} onChange={e => setCountryFilter(e.target.value)}
+            >
+              {countries.map(c => (<option key={c} value={c}>{c}</option>))}
+            </select>
+          </div>
+
+          <div className="space-y-2">
             <label className="block text-sm text-muted-foreground">Options</label>
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-col gap-2">
               <label className="inline-flex items-center gap-2 text-sm text-muted-foreground">
                 <input
                   type="checkbox" className="accent-primary"
                   checked={showHumans} onChange={(e) => setShowHumans(e.target.checked)}
                 /> Include humans
               </label>
+              <label className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+                <input
+                  type="checkbox" className="accent-primary"
+                  checked={showParetoOnly} onChange={(e) => setShowParetoOnly(e.target.checked)}
+                /> Pareto-efficient only
+              </label>
               <button
-                onClick={() => downloadCSV(data)}
+                onClick={() => downloadCSV(finalData)}
                 className="px-3 py-2 rounded-md bg-primary text-primary-foreground text-sm hover:bg-primary/90 transition-colors"
               >Download CSV</button>
             </div>
@@ -393,7 +455,7 @@ export default function ArcPPFDashboard() {
 
           <div className="h-[500px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart margin={{ top: 20, right: 30, bottom: 40, left: 40 }} data={data}>
+              <ComposedChart margin={{ top: 20, right: 30, bottom: 40, left: 40 }} data={finalData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <ReferenceLine y={100} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
                 <XAxis
@@ -454,7 +516,7 @@ export default function ArcPPFDashboard() {
                       name={`${org} (${type})`}
                       fill={orgColors[org] || "#6b7280"}
                       opacity={0.7}
-                      shape={(props: any) => <CustomShape {...props} type={typeShapes[type] || "circle"} />}
+                      shape={(props: any) => <CustomShape {...props} type={typeShapes[type] || "circle"} org={org} />}
                     />
                   ));
                 })}
@@ -465,12 +527,12 @@ export default function ArcPPFDashboard() {
           {/* Legend */}
           <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h3 className="text-lg font-semibold text-foreground mb-3">Organizations (Colors)</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-3">Organizations (Colors & Flags)</h3>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 {Object.entries(orgColors).map(([org, color]) => (
                   <div key={org} className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }}></div>
-                    <span className="text-muted-foreground">{org}</span>
+                    <span className="text-muted-foreground">{orgFlags[org] || "🌍"} {org}</span>
                   </div>
                 ))}
               </div>
@@ -525,6 +587,7 @@ export default function ArcPPFDashboard() {
                 <tr className="text-muted-foreground border-b border-border">
                   <th className="text-left font-medium p-3">System</th>
                   <th className="text-left font-medium p-3">Org</th>
+                  <th className="text-left font-medium p-3">Country</th>
                   <th className="text-left font-medium p-3">Type</th>
                   <th className="text-right font-medium p-3">Cost</th>
                   <th className="text-right font-medium p-3">ARC‑AGI‑1</th>
@@ -533,12 +596,14 @@ export default function ArcPPFDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {[...data].sort((a, b) => a.cost - b.cost).map((d) => {
+                {[...finalData].sort((a, b) => a.cost - b.cost).map((d) => {
                   const onFrontier = !!frontier.find(f => f.system === d.system);
+                  const countryFlag = orgFlags[d.org] || "🌍";
                   return (
                     <tr key={d.system} className="border-b border-border hover:bg-accent/50 transition-colors">
                       <td className="p-3 whitespace-nowrap text-foreground">{d.system}</td>
                       <td className="p-3 whitespace-nowrap text-muted-foreground">{d.org}</td>
+                      <td className="p-3 whitespace-nowrap text-muted-foreground">{countryFlag}</td>
                       <td className="p-3 whitespace-nowrap text-muted-foreground">{d.type}</td>
                       <td className="p-3 text-right text-muted-foreground">${numberFmt(d.cost)}</td>
                       <td className="p-3 text-right text-muted-foreground">{numberFmt(d.agi1)}</td>
