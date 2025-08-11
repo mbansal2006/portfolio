@@ -30,6 +30,13 @@ const Index = () => {
               Writing
               <ArrowRight className="w-4 h-4" />
             </Link>
+            <Link 
+              to="/frontier" 
+              className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              AI Frontier
+              <ArrowRight className="w-4 h-4" />
+            </Link>
             <a href="#about" className="text-muted-foreground hover:text-foreground transition-colors">
               About
             </a>
