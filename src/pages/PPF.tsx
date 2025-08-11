@@ -414,7 +414,7 @@ export default function ArcPPFDashboard() {
                   <th className="text-right font-medium p-3">Cost</th>
                   <th className="text-right font-medium p-3">ARC‑AGI‑1</th>
                   <th className="text-right font-medium p-3">ARC‑AGI‑2</th>
-                  <th className="text-right font-medium p-3">On PPF</th>
+                  <th className="text-right font-medium p-3">Pareto-efficient</th>
                 </tr>
               </thead>
               <tbody>
