@@ -465,7 +465,7 @@ const Index = () => {
         </div>
       )}
 
-      <div className="flex flex-1 flex-col lg:flex-row">
+      <div className="flex flex-1 flex-col lg:flex-row relative">
         {/* Game Board */}
         <div className="flex-1 p-2 lg:p-4 flex flex-col justify-center">
           {!gameStarted ? (
@@ -605,7 +605,7 @@ const Index = () => {
 
           {/* Game Over Screen */}
           {gameOver && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-75">
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50">
               <div className="text-center space-y-4 bg-yellow-900 p-8 border-2 border-yellow-400 max-w-4xl max-h-[80vh] overflow-y-auto">
                 <h2 className="text-3xl font-bold">
                   {collectedExperiences.length === experiences.length ? "🎉 CAREER COMPLETE! 🎉" : "GAME OVER!"}
