@@ -55,12 +55,11 @@ export const ExplorationHUD: React.FC = () => {
           <div className="space-y-2">
             <p className="font-semibold">Site Exploration Progress</p>
             <p className="text-sm">
-              Play both games to unlock the secret Infinity Room. 
-              Your progress in playing the games counts toward unlocking.
+              Play both games to unlock the secret Infinity Room.
             </p>
             {isInfinityRoomUnlocked && (
               <p className="text-sm text-green-400">
-                🎉 You've unlocked the Infinity Room! Visit /infinity to explore.
+                🎉 You've unlocked the Infinity Room! Check it out.
               </p>
             )}
           </div>
