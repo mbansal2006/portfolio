@@ -68,8 +68,11 @@ const Index = () => {
   const alphaRef = useRef(0.1);     // learning rate
   const gammaRef = useRef(0.95);    // discount
 
+  // Q-learning state tracking
   const prevStateRef = useRef<string | null>(null);
   const prevQRef = useRef<number | null>(null);
+  const gameHistoryRef = useRef<Array<{state: string, action: number, reward: number}>>([]);
+  const gamesPlayedRef = useRef(0);
 
   const GRID_SIZE = 20;
   const CELL_SIZE = 25;
@@ -201,6 +204,26 @@ const Index = () => {
     return board[0].every(cell => cell !== 0);
   }, []);
 
+  const learnFromGame = useCallback(() => {
+    // Process the game history and update weights
+    const history = gameHistoryRef.current;
+    if (history.length === 0) return;
+    
+    // Update weights for each move in the game
+    for (let i = 0; i < history.length; i++) {
+      const entry = history[i];
+      const nextState = i < history.length - 1 ? history[i + 1].state : null;
+      updateWeights(entry.state, entry.action, entry.reward, nextState);
+    }
+    
+    // Clear game history
+    gameHistoryRef.current = [];
+    gamesPlayedRef.current += 1;
+    
+    // Log learning progress
+    console.log(`Game ${gamesPlayedRef.current} completed. Epsilon: ${epsilonRef.current.toFixed(3)}`);
+  }, []);
+
   const handlePlayerMove = useCallback((col: number) => {
     if (currentPlayer !== 'player' || connectFourGameOver) return;
     
@@ -216,15 +239,31 @@ const Index = () => {
         setConnectFourWinner('player');
         setConnectFourGameOver(true);
         setPlayerScore(prev => prev + 1);
+        
+        // Negative reward for bot loss
+        gameHistoryRef.current.forEach(entry => {
+          entry.reward = entry.reward - 10; // Negative reward for losing
+        });
+        
+        // Learn from the game
+        learnFromGame();
       } else if (isBoardFull(newBoard)) {
         setConnectFourWinner('tie');
         setConnectFourGameOver(true);
+        
+        // Small positive reward for tie
+        gameHistoryRef.current.forEach(entry => {
+          entry.reward = entry.reward + 2;
+        });
+        
+        // Learn from the game
+        learnFromGame();
       } else {
         setCurrentPlayer('bot');
         // Bot move will be triggered by useEffect
       }
     }
-  }, [currentPlayer, connectFourBoard, connectFourGameOver, isValidMove, makeMove, checkWin, isBoardFull]);
+  }, [currentPlayer, connectFourBoard, connectFourGameOver, isValidMove, makeMove, checkWin, isBoardFull, learnFromGame]);
 
   const startConnectFourGame = () => {
     // Initialize clean boards
@@ -256,6 +295,80 @@ const Index = () => {
     setBotBoard([]);
   };
 
+  // Q-learning helper functions
+  const boardToString = useCallback((board: number[][]) => {
+    return board.map(row => row.join('')).join('');
+  }, []);
+
+  const extractFeatures = useCallback((board: number[][], lastRow: number, lastCol: number, player: number) => {
+    // Check for immediate win
+    if (checkWin(board, lastRow, lastCol, player)) {
+      return [1, 1, 0, 0, 0, 0]; // bias, winning move
+    }
+    
+    // Check for opponent win (blocking)
+    const opponent = player === 1 ? 2 : 1;
+    let blockingMove = 0;
+    for (let col = 0; col < CONNECT_FOUR_COLS; col++) {
+      if (!isValidMove(board, col)) continue;
+      const result = makeMove(board, col, opponent);
+      if (result && checkWin(result.board, result.row, result.col, opponent)) {
+        blockingMove = 1;
+        break;
+      }
+    }
+    
+    // Center control
+    const centerCol = Math.floor(CONNECT_FOUR_COLS / 2);
+    const centerControl = lastCol === centerCol ? 1 : 0;
+    
+    // Edge avoidance
+    const edgeAvoidance = (lastCol === 0 || lastCol === CONNECT_FOUR_COLS - 1) ? 1 : 0;
+    
+    // Opportunities (3 in a row)
+    const opportunities = countOpportunities(board, player);
+    const opportunityFeature = Math.min(opportunities / 3, 1); // Normalize to 0-1
+    
+    return [1, 0, blockingMove, opportunityFeature, centerControl, edgeAvoidance];
+  }, [checkWin, isValidMove, makeMove]);
+
+  const calculateQValue = useCallback((features: number[]) => {
+    return features.reduce((sum, feature, i) => sum + feature * rlWeightsRef.current[i], 0);
+  }, []);
+
+  const updateWeights = useCallback((state: string, action: number, reward: number, nextState: string | null) => {
+    const currentFeatures = extractFeatures(connectFourBoard, 0, 0, 2); // Placeholder, will be updated
+    const currentQ = calculateQValue(currentFeatures);
+    
+    let targetQ = reward;
+    if (nextState) {
+      // Find the best Q-value for the next state
+      let bestNextQ = -Infinity;
+      for (let col = 0; col < CONNECT_FOUR_COLS; col++) {
+        if (!isValidMove(connectFourBoard, col)) continue;
+        const result = makeMove(connectFourBoard, col, 2);
+        if (result) {
+          const features = extractFeatures(result.board, result.row, result.col, 2);
+          const qValue = calculateQValue(features);
+          bestNextQ = Math.max(bestNextQ, qValue);
+        }
+      }
+      targetQ = reward + gammaRef.current * bestNextQ;
+    }
+    
+    const delta = targetQ - currentQ;
+    
+    // Update weights
+    const newWeights = [...rlWeightsRef.current];
+    for (let i = 0; i < newWeights.length; i++) {
+      newWeights[i] += alphaRef.current * delta * currentFeatures[i];
+    }
+    rlWeightsRef.current = newWeights;
+    
+    // Decay epsilon
+    epsilonRef.current = Math.max(0.05, epsilonRef.current * 0.999);
+  }, [connectFourBoard, extractFeatures, calculateQValue, isValidMove, makeMove]);
+
   // Connect Four bot AI functions
   const calculateBotMove = useCallback((board: number[][]) => {
     // Epsilon-greedy strategy
@@ -271,7 +384,7 @@ const Index = () => {
     }
 
     // Q-learning based move
-    let bestScore = -Infinity;
+    let bestQ = -Infinity;
     let bestMove = 0;
     
     for (let col = 0; col < CONNECT_FOUR_COLS; col++) {
@@ -280,17 +393,18 @@ const Index = () => {
       const result = makeMove(board, col, 2); // Bot is player 2
       if (result) {
         const { board: newBoard, row, col: moveCol } = result;
-        const score = evaluateBoard(newBoard, row, moveCol, 2);
+        const features = extractFeatures(newBoard, row, moveCol, 2);
+        const qValue = calculateQValue(features);
         
-        if (score > bestScore) {
-          bestScore = score;
+        if (qValue > bestQ) {
+          bestQ = qValue;
           bestMove = col;
         }
       }
     }
     
     return bestMove;
-  }, [isValidMove, makeMove]);
+  }, [isValidMove, makeMove, extractFeatures, calculateQValue]);
 
   const evaluateBoard = useCallback((board: number[][], lastRow: number, lastCol: number, player: number) => {
     // Check for immediate win
@@ -579,11 +693,21 @@ const Index = () => {
   useEffect(() => {
     if (currentPlayer === 'bot' && connectFourGameStarted && !connectFourGameOver) {
       const timer = setTimeout(() => {
+        const currentState = boardToString(connectFourBoard);
         const botMove = calculateBotMove(connectFourBoard);
         const result = makeMove(connectFourBoard, botMove, 2);
         
         if (result) {
           const { board: newBoard, row, col } = result;
+          const nextState = boardToString(newBoard);
+          
+          // Store the move for learning
+          gameHistoryRef.current.push({
+            state: currentState,
+            action: botMove,
+            reward: 0 // Will be updated when game ends
+          });
+          
           setConnectFourBoard(newBoard);
           setBotBoard(newBoard);
           setLastMove({ row, col });
@@ -592,9 +716,25 @@ const Index = () => {
             setConnectFourWinner('bot');
             setConnectFourGameOver(true);
             setConnectFourBotScore(prev => prev + 1);
+            
+            // Update rewards for bot win
+            gameHistoryRef.current.forEach(entry => {
+              entry.reward = entry.reward + 10; // Positive reward for winning
+            });
+            
+            // Learn from the game
+            learnFromGame();
           } else if (isBoardFull(newBoard)) {
             setConnectFourWinner('tie');
             setConnectFourGameOver(true);
+            
+            // Small positive reward for tie
+            gameHistoryRef.current.forEach(entry => {
+              entry.reward = entry.reward + 2;
+            });
+            
+            // Learn from the game
+            learnFromGame();
           } else {
             setCurrentPlayer('player');
           }
@@ -603,7 +743,7 @@ const Index = () => {
       
       return () => clearTimeout(timer);
     }
-  }, [currentPlayer, connectFourGameStarted, connectFourGameOver, connectFourBoard, calculateBotMove, makeMove, checkWin, isBoardFull]);
+  }, [currentPlayer, connectFourGameStarted, connectFourGameOver, connectFourBoard, calculateBotMove, makeMove, checkWin, isBoardFull, boardToString]);
 
 
 
@@ -1197,6 +1337,8 @@ const Index = () => {
               <div className="text-sm text-yellow-300 space-y-1">
                 <div>Player Score: {playerScore}</div>
                 <div>Bot Score: {connectFourBotScore}</div>
+                <div>Games Played: {gamesPlayedRef.current}</div>
+                <div>Learning Rate: {(1 - epsilonRef.current).toFixed(2)}</div>
               </div>
             </div>
             
