@@ -1,20 +1,37 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { EssayCard, Essay } from "@/components/EssayCard";
 import { EssayReader } from "@/components/EssayReader";
 import { essays } from "@/data/essays";
 import { Button } from "@/components/ui/button";
 import { PenTool, ArrowLeft } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 
 const Thoughts = () => {
   const [selectedEssay, setSelectedEssay] = useState<Essay | null>(null);
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  // Handle URL parameters for direct essay access
+  useEffect(() => {
+    const essaySlug = searchParams.get('essay');
+    if (essaySlug) {
+      const essay = essays.find(e => e.id === essaySlug);
+      if (essay) {
+        setSelectedEssay(essay);
+      }
+    }
+  }, [searchParams]);
 
   const handleReadEssay = (essay: Essay) => {
     setSelectedEssay(essay);
+    // Update URL with essay parameter
+    navigate(`/thoughts?essay=${essay.id}`);
   };
 
   const handleBackToList = () => {
     setSelectedEssay(null);
+    // Clear URL parameter
+    navigate('/thoughts');
   };
 
   if (selectedEssay) {
