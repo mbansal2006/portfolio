@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
+import { ExplorationHUD } from "@/components/ExplorationHUD";
+import { useExploration } from "@/contexts/ExplorationContext";
 
 interface Position {
   x: number;
@@ -41,6 +43,7 @@ const Index = () => {
   const [collectedExperiences, setCollectedExperiences] = useState<Experience[]>([]);
   const [showAlert, setShowAlert] = useState(false);
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
+  const { isInfinityRoomUnlocked, markSnakePlayed, markConnectFourPlayed } = useExploration();
 
   // Connect Four game state
   const [connectFourBoard, setConnectFourBoard] = useState<number[][]>([]);
@@ -53,6 +56,7 @@ const Index = () => {
   const [lastMove, setLastMove] = useState<{row: number, col: number} | null>(null);
   const [learningRate, setLearningRate] = useState(0.1); // User-controlled learning rate
   const [connectFourPlayed, setConnectFourPlayed] = useState(false); // Track if Connect Four has been played
+  const [userHasMadeFirstMove, setUserHasMadeFirstMove] = useState(false); // Track if user has made their first move
 
   // Connect Four bot state
   const [botBoard, setBotBoard] = useState<number[][]>([]);
@@ -240,6 +244,12 @@ const Index = () => {
     
     if (!isValidMove(connectFourBoard, col)) return;
     
+    // Mark that user has made their first move
+    if (!userHasMadeFirstMove) {
+      setUserHasMadeFirstMove(true);
+      setConnectFourGameStarted(true);
+    }
+    
     const result = makeMove(connectFourBoard, col, 1);
     if (result) {
       const { board: newBoard, row, col: moveCol } = result;
@@ -277,7 +287,7 @@ const Index = () => {
         // Bot move will be triggered by useEffect
       }
     }
-  }, [currentPlayer, connectFourBoard, connectFourGameOver, isValidMove, makeMove, checkWin, isBoardFull, learnFromGame]);
+  }, [currentPlayer, connectFourBoard, connectFourGameOver, isValidMove, makeMove, checkWin, isBoardFull, learnFromGame, userHasMadeFirstMove]);
 
   const startConnectFourGame = () => {
     // Initialize clean boards
@@ -307,6 +317,7 @@ const Index = () => {
     setLastMove(null);
     setConnectFourBoard([]);
     setBotBoard([]);
+    setUserHasMadeFirstMove(false);
   };
 
   // Q-learning helper functions
@@ -808,6 +819,20 @@ const Index = () => {
     }
   }, [handleKeyPress]);
 
+  // Mark Snake played when started
+  useEffect(() => {
+    if (gameStarted) {
+      markSnakePlayed();
+    }
+  }, [gameStarted, markSnakePlayed]);
+
+  // Mark Connect Four played when user makes their first move
+  useEffect(() => {
+    if (userHasMadeFirstMove) {
+      markConnectFourPlayed();
+    }
+  }, [userHasMadeFirstMove, markConnectFourPlayed]);
+
   const startGame = () => {
     setGameStarted(true);
     setGameOver(false);
@@ -910,8 +935,7 @@ const Index = () => {
       const initialBoard = Array(CONNECT_FOUR_ROWS).fill(null).map(() => Array(CONNECT_FOUR_COLS).fill(0));
       setConnectFourBoard(initialBoard);
       setBotBoard(initialBoard);
-      // Start the game automatically
-      setConnectFourGameStarted(true);
+      // Don't start the game automatically - wait for user interaction
     }
   }, [connectFourBoard.length]);
 
@@ -927,10 +951,6 @@ const Index = () => {
         <div className="lg:hidden">
           <div className="flex justify-between items-center mb-3">
             <h1 className="text-xl font-bold">MAHIR BANSAL</h1>
-            <div className="text-right text-sm">
-              <div>SCORE: {score}</div>
-              <div>HIGH: {highScore}</div>
-            </div>
           </div>
           
           {/* Mobile Navigation - Compact */}
@@ -998,10 +1018,7 @@ const Index = () => {
         <div className="hidden lg:block">
           <div className="flex justify-between items-center mb-4">
             <h1 className="text-2xl font-bold">MAHIR BANSAL</h1>
-            <div className="text-right">
-              <div>SCORE: {score}</div>
-              <div>HIGH SCORE: {highScore}</div>
-            </div>
+            
           </div>
           
           {/* Desktop Navigation Links */}
@@ -1059,6 +1076,14 @@ const Index = () => {
             >
               💻 GitHub
             </a>
+            {isInfinityRoomUnlocked && (
+              <Link
+                to="/infinity"
+                className="px-4 py-2 bg-purple-600 text-white font-bold hover:bg-purple-700 transition-colors border border-purple-400 rounded"
+              >
+                ∞ Infinity Room
+              </Link>
+            )}
           </div>
         </div>
       </div>
@@ -1137,6 +1162,13 @@ const Index = () => {
                     Love to chat.
                   </p>
             </div>
+                </div>
+              </div>
+              
+              {/* Exploration HUD - positioned below intro */}
+              <div className="mt-6 mb-8 flex justify-center">
+                <div className="w-full max-w-2xl">
+                  <ExplorationHUD />
                 </div>
               </div>
 
@@ -1500,6 +1532,7 @@ const Index = () => {
         <p className="text-sm mt-1">Technology • Government • Markets</p>
       </div>
       </div>
+      
     </div>
     
 

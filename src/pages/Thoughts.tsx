@@ -5,11 +5,13 @@ import { essays } from "@/data/essays";
 import { Button } from "@/components/ui/button";
 import { PenTool, ArrowLeft } from "lucide-react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { useExploration } from "@/contexts/ExplorationContext";
 
 const Thoughts = () => {
   const [selectedEssay, setSelectedEssay] = useState<Essay | null>(null);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { isInfinityRoomUnlocked } = useExploration();
 
   // Handle URL parameters for direct essay access
   useEffect(() => {
@@ -109,6 +111,14 @@ const Thoughts = () => {
           >
             💻 GitHub
           </a>
+          {isInfinityRoomUnlocked && (
+            <Link
+              to="/infinity"
+              className="px-4 py-2 bg-purple-600 text-white font-bold hover:bg-purple-700 transition-colors border border-purple-400 rounded"
+            >
+              ∞ Infinity Room
+            </Link>
+          )}
         </div>
       </div>
 

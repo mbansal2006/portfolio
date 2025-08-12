@@ -3,6 +3,7 @@ import { ComposedChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Responsiv
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 
+
 // --- Raw leaderboard data ---
 // Minimal fields needed for the viz; you can add more as needed.
 const RAW = [

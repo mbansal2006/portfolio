@@ -1,0 +1,542 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useExploration } from '@/contexts/ExplorationContext';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, Brain, Zap, RotateCcw, Play, Pause, Settings, Target, TrendingUp } from 'lucide-react';
+
+interface Node {
+  id: string;
+  x: number;
+  y: number;
+  value: number;
+  bias: number;
+  connections: string[];
+  layer: number;
+  activation: 'sigmoid' | 'relu' | 'tanh';
+}
+
+interface Connection {
+  id: string;
+  from: string;
+  to: string;
+  weight: number;
+  isActive: boolean;
+}
+
+interface TrainingData {
+  inputs: number[];
+  expected: number[];
+}
+
+const InfinityRoom: React.FC = () => {
+  const navigate = useNavigate();
+  const { isInfinityRoomUnlocked } = useExploration();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [showUnlockMessage, setShowUnlockMessage] = useState(false);
+  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
+  
+  // Neural network state
+  const [nodes, setNodes] = useState<Node[]>([]);
+  const [connections, setConnections] = useState<Connection[]>([]);
+  const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const [isTraining, setIsTraining] = useState(false);
+  const [trainingData, setTrainingData] = useState<TrainingData[]>([]);
+  const [currentEpoch, setCurrentEpoch] = useState(0);
+  const [loss, setLoss] = useState(0);
+  const [accuracy, setAccuracy] = useState(0);
+  const [learningRate, setLearningRate] = useState(0.1);
+  const [showSettings, setShowSettings] = useState(false);
+  const [currentInput, setCurrentInput] = useState<number[]>([0, 0]);
+  const [currentOutput, setCurrentOutput] = useState<number[]>([0]);
+
+  // Check if user has unlocked the room
+  useEffect(() => {
+    if (!isInfinityRoomUnlocked) {
+      setShowUnlockMessage(true);
+      const timer = setTimeout(() => {
+        navigate('/');
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [isInfinityRoomUnlocked, navigate]);
+
+  // Canvas setup
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const resizeCanvas = () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+      setCanvasSize({ width, height });
+    };
+
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    return () => window.removeEventListener('resize', resizeCanvas);
+  }, []);
+
+  // Initialize default network
+  useEffect(() => {
+    if (canvasSize.width === 0) return;
+    
+    const inputNodes: Node[] = [
+      { id: 'input1', x: 100, y: 200, value: 0, bias: 0, connections: [], layer: 0, activation: 'sigmoid' },
+      { id: 'input2', x: 100, y: 300, value: 0, bias: 0, connections: [], layer: 0, activation: 'sigmoid' },
+    ];
+    
+    const hiddenNodes: Node[] = [
+      { id: 'hidden1', x: 300, y: 150, value: 0, bias: 0, connections: [], layer: 1, activation: 'relu' },
+      { id: 'hidden2', x: 300, y: 250, value: 0, bias: 0, connections: [], layer: 1, activation: 'relu' },
+      { id: 'hidden3', x: 300, y: 350, value: 0, bias: 0, connections: [], layer: 1, activation: 'relu' },
+    ];
+    
+    const outputNodes: Node[] = [
+      { id: 'output1', x: 500, y: 250, value: 0, bias: 0, connections: [], layer: 2, activation: 'sigmoid' },
+    ];
+    
+    const defaultConnections: Connection[] = [
+      { id: 'c1', from: 'input1', to: 'hidden1', weight: Math.random() * 2 - 1, isActive: false },
+      { id: 'c2', from: 'input1', to: 'hidden2', weight: Math.random() * 2 - 1, isActive: false },
+      { id: 'c3', from: 'input1', to: 'hidden3', weight: Math.random() * 2 - 1, isActive: false },
+      { id: 'c4', from: 'input2', to: 'hidden1', weight: Math.random() * 2 - 1, isActive: false },
+      { id: 'c5', from: 'input2', to: 'hidden2', weight: Math.random() * 2 - 1, isActive: false },
+      { id: 'c6', from: 'input2', to: 'hidden3', weight: Math.random() * 2 - 1, isActive: false },
+      { id: 'c7', from: 'hidden1', to: 'output1', weight: Math.random() * 2 - 1, isActive: false },
+      { id: 'c8', from: 'hidden2', to: 'output1', weight: Math.random() * 2 - 1, isActive: false },
+      { id: 'c9', from: 'hidden3', to: 'output1', weight: Math.random() * 2 - 1, isActive: false },
+    ];
+    
+    setNodes([...inputNodes, ...hiddenNodes, ...outputNodes]);
+    setConnections(defaultConnections);
+    
+    // Generate XOR training data
+    const xorData: TrainingData[] = [
+      { inputs: [0, 0], expected: [0] },
+      { inputs: [0, 1], expected: [1] },
+      { inputs: [1, 0], expected: [1] },
+      { inputs: [1, 1], expected: [0] },
+    ];
+    setTrainingData(xorData);
+  }, [canvasSize.width]);
+
+  // Activation functions
+  const sigmoid = (x: number): number => 1 / (1 + Math.exp(-x));
+  const relu = (x: number): number => Math.max(0, x);
+  const tanh = (x: number): number => Math.tanh(x);
+  
+  const activate = (x: number, activation: string): number => {
+    switch (activation) {
+      case 'sigmoid': return sigmoid(x);
+      case 'relu': return relu(x);
+      case 'tanh': return tanh(x);
+      default: return sigmoid(x);
+    }
+  };
+
+  // Forward pass
+  const forwardPass = useCallback((inputs: number[]): number[] => {
+    const nodeValues = new Map<string, number>();
+    
+    // Set input values
+    const inputNodes = nodes.filter(n => n.layer === 0);
+    inputNodes.forEach((node, i) => {
+      nodeValues.set(node.id, inputs[i] || 0);
+    });
+    
+    // Process hidden layers
+    const hiddenNodes = nodes.filter(n => n.layer === 1);
+    hiddenNodes.forEach(node => {
+      let sum = node.bias;
+      connections
+        .filter(c => c.to === node.id)
+        .forEach(conn => {
+          const fromValue = nodeValues.get(conn.from) || 0;
+          sum += fromValue * conn.weight;
+        });
+      nodeValues.set(node.id, activate(sum, node.activation));
+    });
+    
+    // Process output layer
+    const outputNodes = nodes.filter(n => n.layer === 2);
+    outputNodes.forEach(node => {
+      let sum = node.bias;
+      connections
+        .filter(c => c.to === node.id)
+        .forEach(conn => {
+          const fromValue = nodeValues.get(conn.from) || 0;
+          sum += fromValue * conn.weight;
+        });
+      nodeValues.set(node.id, activate(sum, node.activation));
+    });
+    
+    return outputNodes.map(node => nodeValues.get(node.id) || 0);
+  }, [nodes, connections]);
+
+  // Calculate loss
+  const calculateLoss = useCallback((predicted: number[], expected: number[]): number => {
+    return predicted.reduce((sum, pred, i) => {
+      return sum + Math.pow(pred - expected[i], 2);
+    }, 0) / predicted.length;
+  }, []);
+
+  // Training step
+  const trainStep = useCallback(() => {
+    if (!isTraining) return;
+    
+    let totalLoss = 0;
+    let correct = 0;
+    
+    trainingData.forEach(data => {
+      const predicted = forwardPass(data.inputs);
+      const loss = calculateLoss(predicted, data.expected);
+      totalLoss += loss;
+      
+      // Calculate accuracy (for binary classification)
+      const predictedClass = predicted[0] > 0.5 ? 1 : 0;
+      if (predictedClass === data.expected[0]) correct++;
+    });
+    
+    const avgLoss = totalLoss / trainingData.length;
+    const acc = correct / trainingData.length;
+    
+    setLoss(avgLoss);
+    setAccuracy(acc);
+    
+    // Simple gradient descent (simplified for visualization)
+    setConnections(prev => prev.map(conn => ({
+      ...conn,
+      weight: conn.weight + (Math.random() - 0.5) * learningRate * 0.1
+    })));
+    
+    setCurrentEpoch(prev => prev + 1);
+  }, [isTraining, trainingData, forwardPass, calculateLoss, learningRate]);
+
+  // Training loop
+  useEffect(() => {
+    if (!isTraining) return;
+    
+    const interval = setInterval(trainStep, 100);
+    return () => clearInterval(interval);
+  }, [isTraining, trainStep]);
+
+  // Test current input
+  const testInput = useCallback(() => {
+    const output = forwardPass(currentInput);
+    setCurrentOutput(output);
+  }, [currentInput, forwardPass]);
+
+  // Render network
+  const renderNetwork = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    // Clear canvas
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw connections
+    connections.forEach(conn => {
+      const fromNode = nodes.find(n => n.id === conn.from);
+      const toNode = nodes.find(n => n.id === conn.to);
+      
+      if (!fromNode || !toNode) return;
+      
+      const weight = Math.abs(conn.weight);
+      const alpha = Math.min(weight * 0.5 + 0.1, 1);
+      const color = conn.weight > 0 ? `rgba(0, 255, 0, ${alpha})` : `rgba(255, 0, 0, ${alpha})`;
+      
+      ctx.strokeStyle = color;
+      ctx.lineWidth = weight * 3 + 1;
+      ctx.beginPath();
+      ctx.moveTo(fromNode.x, fromNode.y);
+      ctx.lineTo(toNode.x, toNode.y);
+      ctx.stroke();
+    });
+    
+    // Draw nodes
+    nodes.forEach(node => {
+      const isSelected = selectedNode === node.id;
+      const isInput = node.layer === 0;
+      const isOutput = node.layer === 2;
+      
+      // Node background
+      ctx.fillStyle = isSelected ? '#4ade80' : isInput ? '#3b82f6' : isOutput ? '#ef4444' : '#8b5cf6';
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, 20, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Node border
+      ctx.strokeStyle = isSelected ? '#22c55e' : '#ffffff';
+      ctx.lineWidth = isSelected ? 3 : 2;
+      ctx.stroke();
+      
+      // Node value
+      ctx.fillStyle = 'white';
+      ctx.font = '12px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(node.value.toFixed(2), node.x, node.y + 4);
+      
+      // Node label
+      ctx.fillStyle = '#9ca3af';
+      ctx.font = '10px monospace';
+      ctx.fillText(node.id, node.x, node.y + 35);
+    });
+  }, [nodes, connections, selectedNode]);
+
+  // Handle canvas click
+  const handleCanvasClick = useCallback((e: React.MouseEvent) => {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    // Check if clicked on a node
+    const clickedNode = nodes.find(node => {
+      const distance = Math.sqrt(Math.pow(node.x - x, 2) + Math.pow(node.y - y, 2));
+      return distance <= 20;
+    });
+    
+    setSelectedNode(clickedNode?.id || null);
+  }, [nodes]);
+
+  // Start/stop training
+  const toggleTraining = () => {
+    setIsTraining(!isTraining);
+  };
+
+  // Reset network
+  const resetNetwork = () => {
+    setConnections(prev => prev.map(conn => ({
+      ...conn,
+      weight: Math.random() * 2 - 1
+    })));
+    setCurrentEpoch(0);
+    setLoss(0);
+    setAccuracy(0);
+    setIsTraining(false);
+  };
+
+  // Render loop
+  useEffect(() => {
+    renderNetwork();
+  }, [renderNetwork]);
+
+  // Unlock message
+  if (showUnlockMessage) {
+    return (
+      <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
+        <div className="text-center text-yellow-400 font-mono">
+          <h1 className="text-4xl mb-4">🔒 Access Denied</h1>
+          <p className="text-xl mb-4">You need to explore 100% of the site first!</p>
+          <p className="text-lg">Redirecting to home...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black overflow-hidden">
+      {/* Header */}
+      <div className="absolute top-4 left-4 z-20 flex gap-2">
+        <Button
+          onClick={() => navigate('/')}
+          variant="outline"
+          size="sm"
+          className="bg-black/50 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Exit
+        </Button>
+        <Button
+          onClick={toggleTraining}
+          variant="outline"
+          size="sm"
+          className={`${
+            isTraining 
+              ? 'bg-red-600 text-white border-red-400' 
+              : 'bg-green-600 text-white border-green-400'
+          } hover:opacity-80`}
+        >
+          {isTraining ? <Pause className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />}
+          {isTraining ? 'Stop' : 'Train'}
+        </Button>
+        <Button
+          onClick={resetNetwork}
+          variant="outline"
+          size="sm"
+          className="bg-black/50 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black"
+        >
+          <RotateCcw className="w-4 h-4 mr-2" />
+          Reset
+        </Button>
+        <Button
+          onClick={() => setShowSettings(!showSettings)}
+          variant="outline"
+          size="sm"
+          className="bg-black/50 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black"
+        >
+          <Settings className="w-4 h-4 mr-2" />
+          Settings
+        </Button>
+      </div>
+
+      {/* Title */}
+      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-20 text-center">
+        <div className="bg-black/50 border border-yellow-400/50 rounded-lg p-3 text-yellow-400 font-mono">
+          <h2 className="text-lg font-bold mb-1 flex items-center justify-center gap-2">
+            <Brain className="w-5 h-5" />
+            Neural Network Visualizer
+          </h2>
+          <p className="text-sm">Watch the network learn XOR patterns</p>
+        </div>
+      </div>
+
+      {/* Settings Panel */}
+      {showSettings && (
+        <div className="absolute top-16 left-4 z-20 bg-black/80 border border-yellow-400/50 rounded-lg p-4 text-yellow-400 font-mono text-sm space-y-3 min-w-[250px]">
+          <h3 className="font-bold text-base">Network Settings</h3>
+          
+          <div className="space-y-1">
+            <div className="flex justify-between">
+              <span>Learning Rate</span>
+              <span>{learningRate.toFixed(2)}</span>
+            </div>
+            <input
+              type="range"
+              min="0.01"
+              max="0.5"
+              step="0.01"
+              value={learningRate}
+              onChange={(e) => setLearningRate(parseFloat(e.target.value))}
+              className="w-full"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <h4 className="font-semibold">Training Data (XOR)</h4>
+            <div className="text-xs space-y-1">
+              {trainingData.map((data, i) => (
+                <div key={i} className="flex justify-between">
+                  <span>Input: [{data.inputs.join(', ')}]</span>
+                  <span>→ {data.expected[0]}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <h4 className="font-semibold">Network Architecture</h4>
+            <div className="text-xs">
+              <div>Input Layer: 2 nodes</div>
+              <div>Hidden Layer: 3 nodes (ReLU)</div>
+              <div>Output Layer: 1 node (Sigmoid)</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Test Input Panel */}
+      <div className="absolute top-16 right-4 z-20 bg-black/80 border border-yellow-400/50 rounded-lg p-4 text-yellow-400 font-mono text-sm space-y-3 min-w-[200px]">
+        <h3 className="font-bold text-base flex items-center gap-2">
+          <Target className="w-4 h-4" />
+          Test Input
+        </h3>
+        
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <span>Input 1:</span>
+            <input
+              type="number"
+              min="0"
+              max="1"
+              step="0.1"
+              value={currentInput[0]}
+              onChange={(e) => setCurrentInput([parseFloat(e.target.value), currentInput[1]])}
+              className="w-16 bg-black border border-yellow-400 text-yellow-400 px-2 py-1 rounded text-xs"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <span>Input 2:</span>
+            <input
+              type="number"
+              min="0"
+              max="1"
+              step="0.1"
+              value={currentInput[1]}
+              onChange={(e) => setCurrentInput([currentInput[0], parseFloat(e.target.value)])}
+              className="w-16 bg-black border border-yellow-400 text-yellow-400 px-2 py-1 rounded text-xs"
+            />
+          </div>
+          <Button
+            onClick={testInput}
+            size="sm"
+            className="w-full bg-yellow-600 text-black hover:bg-yellow-700 text-xs"
+          >
+            Test
+          </Button>
+          <div className="text-xs">
+            Output: {currentOutput[0]?.toFixed(3) || '0.000'}
+          </div>
+        </div>
+      </div>
+
+      {/* Canvas */}
+      <canvas
+        ref={canvasRef}
+        className="cursor-pointer"
+        onClick={handleCanvasClick}
+      />
+
+      {/* Training Stats */}
+      <div className="absolute bottom-4 right-4 z-20 bg-black/80 border border-yellow-400/50 rounded-lg p-4 text-yellow-400 font-mono text-sm space-y-2 min-w-[200px]">
+        <h3 className="font-bold text-base flex items-center gap-2">
+          <TrendingUp className="w-4 h-4" />
+          Training Stats
+        </h3>
+        <div className="space-y-1">
+          <div className="flex justify-between">
+            <span>Epoch:</span>
+            <span>{currentEpoch}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Loss:</span>
+            <span>{loss.toFixed(4)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Accuracy:</span>
+            <span>{(accuracy * 100).toFixed(1)}%</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Status:</span>
+            <span className={isTraining ? 'text-green-400' : 'text-gray-400'}>
+              {isTraining ? 'Training' : 'Idle'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Instructions */}
+      <div className="absolute bottom-4 left-4 z-20 bg-black/80 border border-yellow-400/50 rounded-lg p-4 text-yellow-400 font-mono text-sm max-w-[300px]">
+        <h3 className="font-bold mb-2">How It Works</h3>
+        <div className="space-y-1 text-xs">
+          <div>• Click nodes to select them</div>
+          <div>• Green connections = positive weights</div>
+          <div>• Red connections = negative weights</div>
+          <div>• Thicker lines = stronger connections</div>
+          <div>• Watch the network learn XOR patterns</div>
+          <div>• Blue = Input, Purple = Hidden, Red = Output</div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default InfinityRoom;
