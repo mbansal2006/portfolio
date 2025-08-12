@@ -26,7 +26,7 @@ const Index = () => {
   const [snake, setSnake] = useState<Position[]>([{ x: 5, y: 5 }]);
   const [botSnake, setBotSnake] = useState<Position[]>([{ x: 15, y: 15 }]);
   const [botDirection, setBotDirection] = useState<Position>({ x: -1, y: 0 });
-  const [botScore, setBotScore] = useState(0);
+  const [snakeBotScore, setSnakeBotScore] = useState(0);
   const [botCollectedExperiences, setBotCollectedExperiences] = useState<Experience[]>([]);
   const [gameMode, setGameMode] = useState<'single' | 'competitive'>('competitive');
   const [winner, setWinner] = useState<'player' | 'bot' | 'tie' | null>(null);
@@ -42,46 +42,39 @@ const Index = () => {
   const [showAlert, setShowAlert] = useState(false);
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
 
-  // Tetris game state
-  const [tetrisBoard, setTetrisBoard] = useState<number[][]>([]);
-  const [currentPiece, setCurrentPiece] = useState<{ shape: number[][]; x: number; y: number; type: string } | null>(null);
-  const [nextPiece, setNextPiece] = useState<string>('');
-  const [tetrisScore, setTetrisScore] = useState(0);
-  const [tetrisLevel, setTetrisLevel] = useState(1);
-  const [tetrisLines, setTetrisLines] = useState(0);
-  const [tetrisGameStarted, setTetrisGameStarted] = useState(false);
-  const [tetrisGameOver, setTetrisGameOver] = useState(false);
-  const [tetrisPaused, setTetrisPaused] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<Experience | null>(null);
+  // Connect Four game state
+  const [connectFourBoard, setConnectFourBoard] = useState<number[][]>([]);
+  const [connectFourGameStarted, setConnectFourGameStarted] = useState(false);
+  const [connectFourGameOver, setConnectFourGameOver] = useState(false);
+  const [connectFourWinner, setConnectFourWinner] = useState<'player' | 'bot' | 'tie' | null>(null);
+  const [currentPlayer, setCurrentPlayer] = useState<'player' | 'bot'>('player');
+  const [playerScore, setPlayerScore] = useState(0);
+  const [connectFourBotScore, setConnectFourBotScore] = useState(0);
+  const [lastMove, setLastMove] = useState<{row: number, col: number} | null>(null);
 
-  // Tetris bot state
-  const [tetrisBotBoard, setTetrisBotBoard] = useState<number[][]>([]);
-  const [tetrisBotPiece, setTetrisBotPiece] = useState<{ shape: number[][]; x: number; y: number; type: string } | null>(null);
-  const [tetrisBotScore, setTetrisBotScore] = useState(0);
-  const [tetrisBotLines, setTetrisBotLines] = useState(0);
-  const [tetrisWinner, setTetrisWinner] = useState<'player' | 'bot' | null>(null);
-  // Shared 7-bag queue for fair/synchronized piece order
-  const [tetrisQueue, setTetrisQueue] = useState<string[]>([]);
-  const tetrisQueueRef = useRef<string[]>([]);
+  // Connect Four bot state
+  const [botBoard, setBotBoard] = useState<number[][]>([]);
 
   // RL bot (epsilon-greedy linear Q-learning)
   const rlWeightsRef = useRef<number[]>([
-    -0.5,  // bias
-    -0.7,  // aggregate height
-    -1.0,  // holes
-    -0.2   // bumpiness
+    -0.1,  // bias
+    0.8,   // winning moves
+    -0.6,  // blocking opponent wins
+    0.4,   // creating opportunities
+    -0.3,  // center control
+    -0.2   // edge avoidance
   ]);
-  const epsilonRef = useRef(0.10);  // exploration
-  const alphaRef = useRef(0.05);    // learning rate
-  const gammaRef = useRef(0.90);    // discount
+  const epsilonRef = useRef(0.15);  // exploration
+  const alphaRef = useRef(0.1);     // learning rate
+  const gammaRef = useRef(0.95);    // discount
 
-  const prevPhiRef = useRef<number[] | null>(null);
+  const prevStateRef = useRef<string | null>(null);
   const prevQRef = useRef<number | null>(null);
 
   const GRID_SIZE = 20;
   const CELL_SIZE = 25;
-  const TETRIS_WIDTH = 10;
-  const TETRIS_HEIGHT = 20;
+  const CONNECT_FOUR_ROWS = 6;
+  const CONNECT_FOUR_COLS = 7;
 
   // Mahir's life experiences as food items
   const experiences: Experience[] = [
@@ -138,347 +131,232 @@ const Index = () => {
     
   ];
 
-  // Tetris pieces with project themes
-  const tetrisPieces = {
-    I: {
-      shape: [[1, 1, 1, 1]],
-      color: "#FF6B6B", // Red - Krypte
-      project: "krypte"
-    },
-    O: {
-      shape: [[1, 1], [1, 1]],
-      color: "#4ECDC4", // Teal - AssureNow
-      project: "assurenow"
-    },
-    T: {
-      shape: [[0, 1, 0], [1, 1, 1]],
-      color: "#96CEB4", // Green - Drug Monitor
-      project: "drug-monitor"
-    },
-    S: {
-      shape: [[0, 1, 1], [1, 1, 0]],
-      color: "#45B7D1", // Blue - Regulations Scraper
-      project: "regulations-scraper"
-    },
-    Z: {
-      shape: [[1, 1, 0], [0, 1, 1]],
-      color: "#FFEAA7", // Yellow - Treasury Tool
-      project: "treasury-tool"
-    },
-    J: {
-      shape: [[1, 0, 0], [1, 1, 1]],
-      color: "#FF6B6B", // Red - Health Economics
-      project: "health-economics"
-    },
-    L: {
-      shape: [[0, 0, 1], [1, 1, 1]],
-      color: "#4ECDC4", // Teal - AI Frontier
-      project: "ai-frontier"
-    }
-  };
 
-  const pieceTypes = Object.keys(tetrisPieces);
 
-  // 7-bag helpers (must be declared before piece generators)
-  const generateBag = useCallback(() => {
-    const bag = [...pieceTypes];
-    for (let i = bag.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [bag[i], bag[j]] = [bag[j], bag[i]];
-    }
-    return bag;
-  }, [pieceTypes]);
-
-  const ensureQueue = useCallback(() => {
-    let q = tetrisQueueRef.current.slice();
-    while (q.length < 7) q = q.concat(generateBag());
-    tetrisQueueRef.current = q;
-    setTetrisQueue(q.slice());
-  }, [generateBag]);
-
-  const drawNextType = useCallback(() => {
-    ensureQueue();
-    const [type, ...rest] = tetrisQueueRef.current;
-    tetrisQueueRef.current = rest;
-    setTetrisQueue(rest.slice());
-    return type as string;
-  }, [ensureQueue]);
-
-  const peekNextType = useCallback(() => {
-    ensureQueue();
-    return (tetrisQueueRef.current[0] as string) || pieceTypes[0];
-  }, [ensureQueue, pieceTypes]);
-
-  // Tetris game functions
-  const initializeTetrisBoard = useCallback(() => {
-    const board = Array(TETRIS_HEIGHT).fill(null).map(() => Array(TETRIS_WIDTH).fill(0));
-    setTetrisBoard(board);
+  // Connect Four game functions
+  const initializeConnectFourBoard = useCallback(() => {
+    const board = Array(CONNECT_FOUR_ROWS).fill(null).map(() => Array(CONNECT_FOUR_COLS).fill(0));
+    setConnectFourBoard(board);
+    setBotBoard(board);
   }, []);
 
-  const generateNewPiece = useCallback(() => {
-    const type = drawNextType();
-    const piece = tetrisPieces[type as keyof typeof tetrisPieces];
-    return {
-      shape: piece.shape,
-      x: Math.floor(TETRIS_WIDTH / 2) - Math.floor(piece.shape[0].length / 2),
-      y: 0,
-      type
-    };
-  }, [drawNextType, tetrisPieces]);
+  const isValidMove = useCallback((board: number[][], col: number) => {
+    return board[0][col] === 0;
+  }, []);
 
-  const checkTetrisCollision = useCallback((piece: { shape: number[][]; x: number; y: number }, board: number[][]) => {
-    for (let y = 0; y < piece.shape.length; y++) {
-      for (let x = 0; x < piece.shape[y].length; x++) {
-        if (piece.shape[y][x]) {
-          const newX = piece.x + x;
-          const newY = piece.y + y;
-          
-          if (newX < 0 || newX >= TETRIS_WIDTH || newY >= TETRIS_HEIGHT) {
-            return true;
-          }
-          
-          if (newY >= 0 && board[newY][newX]) {
-            return true;
-          }
-        }
+  const getNextEmptyRow = useCallback((board: number[][], col: number) => {
+    for (let row = CONNECT_FOUR_ROWS - 1; row >= 0; row--) {
+      if (board[row][col] === 0) {
+        return row;
       }
     }
-    return false;
+    return -1;
   }, []);
 
-  const placePiece = useCallback((piece: { shape: number[][]; x: number; y: number; type: string }, board: number[][]) => {
+  const makeMove = useCallback((board: number[][], col: number, player: number) => {
     const newBoard = board.map(row => [...row]);
-    const projectId = tetrisPieces[piece.type as keyof typeof tetrisPieces].project;
-    
-    for (let y = 0; y < piece.shape.length; y++) {
-      for (let x = 0; x < piece.shape[y].length; x++) {
-        if (piece.shape[y][x]) {
-          const boardX = piece.x + x;
-          const boardY = piece.y + y;
-          if (boardY >= 0) {
-            newBoard[boardY][boardX] = 1;
-          }
-        }
-      }
+    const row = getNextEmptyRow(newBoard, col);
+    if (row !== -1) {
+      newBoard[row][col] = player;
+      return { board: newBoard, row, col };
     }
-    
-    // Find the project and show it
-    const project = experiences.find(exp => exp.id === projectId);
-    if (project) {
-      setSelectedProject(project);
-      setTimeout(() => setSelectedProject(null), 3000); // Hide after 3 seconds
-    }
-    
-    return newBoard;
-  }, [tetrisPieces, experiences]);
+    return null;
+  }, [getNextEmptyRow]);
 
-  const clearLines = useCallback((board: number[][]) => {
-    let linesCleared = 0;
-    const newBoard = board.filter(row => {
-      if (row.every(cell => cell === 1)) {
-        linesCleared++;
-        return false;
-      }
-      return true;
-    });
-    // Add empty rows at the top
-    while (newBoard.length < TETRIS_HEIGHT) newBoard.unshift(Array(TETRIS_WIDTH).fill(0));
+  const checkWin = useCallback((board: number[][], row: number, col: number, player: number) => {
+    const directions = [
+      [0, 1],   // horizontal
+      [1, 0],   // vertical
+      [1, 1],   // diagonal down-right
+      [1, -1]   // diagonal down-left
+    ];
 
-    if (linesCleared > 0) {
-      // Classic Tetris scoring for clears
-      const base = linesCleared === 1 ? 100 : linesCleared === 2 ? 300 : linesCleared === 3 ? 500 : 800;
-      setTetrisScore(prev => prev + base * tetrisLevel);
-      setTetrisLines(prev => {
-        const updated = prev + linesCleared;
-        setTetrisLevel(Math.floor(updated / 10) + 1);
-        return updated;
-      });
-    }
-    return newBoard;
-  }, [tetrisLevel]);
-
-  const clearBotLines = useCallback((board: number[][]) => {
-    let linesCleared = 0;
-    const newBoard = board.filter(row => {
-      if (row.every(cell => cell === 1)) {
-        linesCleared++;
-        return false;
-      }
-      return true;
-    });
-    // Add empty rows at the top
-    while (newBoard.length < TETRIS_HEIGHT) newBoard.unshift(Array(TETRIS_WIDTH).fill(0));
-
-    if (linesCleared > 0) {
-      const base = linesCleared === 1 ? 100 : linesCleared === 2 ? 300 : linesCleared === 3 ? 500 : 800;
-      setTetrisBotScore(prev => prev + base * tetrisLevel);
-      setTetrisBotLines(prev => prev + linesCleared);
-    }
-    return newBoard;
-  }, [tetrisLevel]);
-
-  const rotatePiece = useCallback((piece: { shape: number[][]; x: number; y: number; type: string }) => {
-    const rotated = piece.shape[0].map((_, i) => piece.shape.map(row => row[i]).reverse());
-    return { ...piece, shape: rotated };
-  }, []);
-
-  const movePiece = useCallback((dx: number, dy: number) => {
-    if (!currentPiece || tetrisPaused) return false;
-    
-    const movedPiece = { ...currentPiece, x: currentPiece.x + dx, y: currentPiece.y + dy };
-    
-    if (!checkTetrisCollision(movedPiece, tetrisBoard)) {
-      setCurrentPiece(movedPiece);
-      return true;
-    } else if (dy > 0) {
-      // Piece landed - only place if it's not at the very top
-      if (currentPiece.y > 0) {
-        const newBoard = placePiece(currentPiece, tetrisBoard);
-        const clearedBoard = clearLines(newBoard);
-        setTetrisBoard(clearedBoard);
-        
-        // Spawn player next piece from shared queue
-        const newPiece = generateNewPiece();
-        if (checkTetrisCollision(newPiece, clearedBoard)) {
-          setTetrisGameOver(true);
-        } else {
-          setCurrentPiece(newPiece);
-        }
-        // Update preview
-        setNextPiece(peekNextType());
-      } else {
-        // Game over if piece can't move from top
-        setTetrisGameOver(true);
-      }
-      return false;
-    }
-    return false;
-  }, [currentPiece, tetrisBoard, tetrisPaused, checkTetrisCollision, placePiece, clearLines, pieceTypes, generateNewPiece]);
-
-  const startTetrisGame = () => {
-    // Initialize clean boards
-    const cleanBoard = Array(TETRIS_HEIGHT).fill(null).map(() => Array(TETRIS_WIDTH).fill(0));
-    setTetrisBoard(cleanBoard);
-    setTetrisBotBoard(cleanBoard);
-    
-    // Reset game state
-    setTetrisScore(0);
-    setTetrisLevel(1);
-    setTetrisLines(0);
-    setTetrisGameOver(false);
-    setTetrisPaused(false);
-    setSelectedProject(null);
-    setTetrisBotScore(0);
-    setTetrisBotLines(0);
-    setTetrisWinner(null);
-    // Reset 7-bag queue
-    tetrisQueueRef.current = [];
-    setTetrisQueue([]);
-    ensureQueue();
-    
-    // Generate first pieces
-    const firstPiece = generateNewPiece();
-    const botPiece = generateNewPiece();
-    const nextPieceType = peekNextType();
-    
-    setCurrentPiece(firstPiece);
-    setTetrisBotPiece(botPiece);
-    setNextPiece(nextPieceType);
-    
-    // Start the game last
-    setTetrisGameStarted(true);
-  };
-
-  const resetTetrisGame = () => {
-    setTetrisGameStarted(false);
-    setTetrisGameOver(false);
-    setTetrisPaused(false);
-    setTetrisScore(0);
-    setTetrisLevel(1);
-    setTetrisLines(0);
-    setCurrentPiece(null);
-    setNextPiece('');
-    setSelectedProject(null);
-    setTetrisBoard([]);
-    setTetrisBotBoard([]);
-    setTetrisBotPiece(null);
-    setTetrisBotScore(0);
-    setTetrisBotLines(0);
-    setTetrisWinner(null);
-  };
-
-  // Tetris bot AI functions
-  const calculateTetrisBotMove = useCallback((botBoard: number[][], botPiece: { shape: number[][]; x: number; y: number; type: string }) => {
-    let bestScore = -Infinity;
-    let bestMove = { x: botPiece.x, rotation: 0 };
-    
-    // Try all possible rotations and positions
-    for (let rotation = 0; rotation < 4; rotation++) {
-      let rotatedPiece = { ...botPiece };
-      for (let r = 0; r < rotation; r++) {
-        rotatedPiece = rotatePiece(rotatedPiece);
+    for (const [dr, dc] of directions) {
+      let count = 1;
+      
+      // Check in positive direction
+      for (let i = 1; i < 4; i++) {
+        const newRow = row + dr * i;
+        const newCol = col + dc * i;
+        if (newRow < 0 || newRow >= CONNECT_FOUR_ROWS || newCol < 0 || newCol >= CONNECT_FOUR_COLS) break;
+        if (board[newRow][newCol] !== player) break;
+        count++;
       }
       
-      // Try all horizontal positions
-      for (let x = -2; x <= TETRIS_WIDTH + 2; x++) {
-        const testPiece = { ...rotatedPiece, x };
-        
-        // Find the lowest valid position
-        let y = botPiece.y;
-        while (!checkTetrisCollision({ ...testPiece, y }, botBoard)) {
-          y++;
+      // Check in negative direction
+      for (let i = 1; i < 4; i++) {
+        const newRow = row - dr * i;
+        const newCol = col - dc * i;
+        if (newRow < 0 || newRow >= CONNECT_FOUR_ROWS || newCol < 0 || newCol >= CONNECT_FOUR_COLS) break;
+        if (board[newRow][newCol] !== player) break;
+        count++;
+      }
+      
+      if (count >= 4) return true;
+    }
+    return false;
+  }, []);
+
+  const isBoardFull = useCallback((board: number[][]) => {
+    return board[0].every(cell => cell !== 0);
+  }, []);
+
+  const handlePlayerMove = useCallback((col: number) => {
+    if (currentPlayer !== 'player' || connectFourGameOver) return;
+    
+    if (!isValidMove(connectFourBoard, col)) return;
+    
+    const result = makeMove(connectFourBoard, col, 1);
+    if (result) {
+      const { board: newBoard, row, col: moveCol } = result;
+      setConnectFourBoard(newBoard);
+      setLastMove({ row, col: moveCol });
+      
+      if (checkWin(newBoard, row, moveCol, 1)) {
+        setConnectFourWinner('player');
+        setConnectFourGameOver(true);
+        setPlayerScore(prev => prev + 1);
+      } else if (isBoardFull(newBoard)) {
+        setConnectFourWinner('tie');
+        setConnectFourGameOver(true);
+      } else {
+        setCurrentPlayer('bot');
+        // Bot move will be triggered by useEffect
+      }
+    }
+  }, [currentPlayer, connectFourBoard, connectFourGameOver, isValidMove, makeMove, checkWin, isBoardFull]);
+
+  const startConnectFourGame = () => {
+    // Initialize clean boards
+    const cleanBoard = Array(CONNECT_FOUR_ROWS).fill(null).map(() => Array(CONNECT_FOUR_COLS).fill(0));
+    setConnectFourBoard(cleanBoard);
+    setBotBoard(cleanBoard);
+    
+    // Reset game state
+    setPlayerScore(0);
+    setConnectFourBotScore(0);
+    setConnectFourGameOver(false);
+    setConnectFourWinner(null);
+    setCurrentPlayer('player');
+    setLastMove(null);
+    
+    // Start the game
+    setConnectFourGameStarted(true);
+  };
+
+  const resetConnectFourGame = () => {
+    setConnectFourGameStarted(false);
+    setConnectFourGameOver(false);
+    setConnectFourWinner(null);
+    setCurrentPlayer('player');
+    setPlayerScore(0);
+    setConnectFourBotScore(0);
+    setLastMove(null);
+    setConnectFourBoard([]);
+    setBotBoard([]);
+  };
+
+  // Connect Four bot AI functions
+  const calculateBotMove = useCallback((board: number[][]) => {
+    // Epsilon-greedy strategy
+    if (Math.random() < epsilonRef.current) {
+      // Random move
+      const validMoves = [];
+      for (let col = 0; col < CONNECT_FOUR_COLS; col++) {
+        if (isValidMove(board, col)) {
+          validMoves.push(col);
         }
-        y--; // Move back up one step
+      }
+      return validMoves[Math.floor(Math.random() * validMoves.length)];
+    }
+
+    // Q-learning based move
+    let bestScore = -Infinity;
+    let bestMove = 0;
+    
+    for (let col = 0; col < CONNECT_FOUR_COLS; col++) {
+      if (!isValidMove(board, col)) continue;
+      
+      const result = makeMove(board, col, 2); // Bot is player 2
+      if (result) {
+        const { board: newBoard, row, col: moveCol } = result;
+        const score = evaluateBoard(newBoard, row, moveCol, 2);
         
-        if (y >= 0) {
-                  const testBoard = placePiece({ ...testPiece, y }, botBoard);
-        const clearedBoard = clearBotLines(testBoard);
-        const score = evaluateTetrisBoard(clearedBoard);
-          
-          if (score > bestScore) {
-            bestScore = score;
-            bestMove = { x, rotation };
-          }
+        if (score > bestScore) {
+          bestScore = score;
+          bestMove = col;
         }
       }
     }
     
     return bestMove;
-  }, [rotatePiece, checkTetrisCollision, placePiece, clearLines]);
+  }, [isValidMove, makeMove]);
 
-  const evaluateTetrisBoard = useCallback((board: number[][]) => {
+  const evaluateBoard = useCallback((board: number[][], lastRow: number, lastCol: number, player: number) => {
+    // Check for immediate win
+    if (checkWin(board, lastRow, lastCol, player)) {
+      return 1000;
+    }
+    
+    // Check for opponent win (blocking)
+    const opponent = player === 1 ? 2 : 1;
+    for (let col = 0; col < CONNECT_FOUR_COLS; col++) {
+      if (!isValidMove(board, col)) continue;
+      const result = makeMove(board, col, opponent);
+      if (result && checkWin(result.board, result.row, result.col, opponent)) {
+        return 800; // High value for blocking
+      }
+    }
+    
+    // Evaluate board features
     let score = 0;
     
-    // Prefer lower heights
-    for (let x = 0; x < TETRIS_WIDTH; x++) {
-      for (let y = 0; y < TETRIS_HEIGHT; y++) {
-        if (board[y][x]) {
-          score -= (TETRIS_HEIGHT - y) * 10;
-          break;
-        }
-      }
-    }
+    // Center control
+    const centerCol = Math.floor(CONNECT_FOUR_COLS / 2);
+    if (lastCol === centerCol) score += 3;
     
-    // Prefer complete lines
-    for (let y = 0; y < TETRIS_HEIGHT; y++) {
-      if (board[y].every(cell => cell === 1)) {
-        score += 1000;
-      }
-    }
+    // Avoid edges
+    if (lastCol === 0 || lastCol === CONNECT_FOUR_COLS - 1) score -= 1;
     
-    // Avoid holes
-    for (let x = 0; x < TETRIS_WIDTH; x++) {
-      let foundBlock = false;
-      for (let y = 0; y < TETRIS_HEIGHT; y++) {
-        if (board[y][x]) {
-          foundBlock = true;
-        } else if (foundBlock) {
-          score -= 50; // Penalty for holes
-        }
-      }
-    }
+    // Create opportunities (3 in a row)
+    score += countOpportunities(board, player) * 2;
     
     return score;
+  }, [checkWin, isValidMove, makeMove]);
+
+  const countOpportunities = useCallback((board: number[][], player: number) => {
+    let opportunities = 0;
+    
+    // Check for 3 in a row with space for 4th
+    for (let row = 0; row < CONNECT_FOUR_ROWS; row++) {
+      for (let col = 0; col < CONNECT_FOUR_COLS; col++) {
+        if (board[row][col] === player) {
+          // Check horizontal opportunities
+          if (col <= CONNECT_FOUR_COLS - 4) {
+            let count = 1;
+            let empty = 0;
+            for (let i = 1; i < 4; i++) {
+              if (board[row][col + i] === player) count++;
+              else if (board[row][col + i] === 0) empty++;
+            }
+            if (count === 3 && empty === 1) opportunities++;
+          }
+          
+          // Check vertical opportunities
+          if (row <= CONNECT_FOUR_ROWS - 4) {
+            let count = 1;
+            let empty = 0;
+            for (let i = 1; i < 4; i++) {
+              if (board[row + i][col] === player) count++;
+              else if (board[row + i][col] === 0) empty++;
+            }
+            if (count === 3 && empty === 1) opportunities++;
+          }
+        }
+      }
+    }
+    
+    return opportunities;
   }, []);
 
   // Generate all experiences on the board
@@ -612,7 +490,7 @@ const Index = () => {
            if (newFood.length === 0) {
             // Compare scores
             const finalPlayerScore = score + eatenFood.points;
-            const finalBotScore = botScore;
+            const finalBotScore = snakeBotScore;
             
             if (finalPlayerScore > finalBotScore) {
               setWinner('player');
@@ -663,7 +541,7 @@ const Index = () => {
         const botFoodIndex = food.findIndex(f => f.x === botHead.x && f.y === botHead.y);
         if (botFoodIndex !== -1) {
           const eatenFood = food[botFoodIndex];
-          setBotScore(prev => prev + eatenFood.points);
+          setSnakeBotScore(prev => prev + eatenFood.points);
           setBotCollectedExperiences(prev => [...prev, eatenFood]);
           
           // Remove eaten food
@@ -675,7 +553,7 @@ const Index = () => {
           if (newFood.length === 0) {
             // Game ends - compare scores
             const finalPlayerScore = score;
-            const finalBotScore = botScore + eatenFood.points;
+            const finalBotScore = snakeBotScore + eatenFood.points;
             
             if (finalPlayerScore > finalBotScore) {
               setWinner('player');
@@ -695,123 +573,39 @@ const Index = () => {
     }, gameSpeed);
 
     return () => clearInterval(gameLoop);
-  }, [gameStarted, gameOver, direction, food, calculateBotDirection, gameSpeed, score, highScore, snake, botSnake, botScore, checkCollision]);
+  }, [gameStarted, gameOver, direction, food, calculateBotDirection, gameSpeed, score, highScore, snake, botSnake, snakeBotScore, checkCollision]);
 
-  // Tetris game loop
+  // Connect Four bot move effect
   useEffect(() => {
-    if (!tetrisGameStarted || tetrisGameOver || tetrisPaused) return;
-
-    const tetrisLoop = setInterval(() => {
-      // Player piece movement
-      movePiece(0, 1);
+    if (currentPlayer === 'bot' && connectFourGameStarted && !connectFourGameOver) {
+      const timer = setTimeout(() => {
+        const botMove = calculateBotMove(connectFourBoard);
+        const result = makeMove(connectFourBoard, botMove, 2);
+        
+        if (result) {
+          const { board: newBoard, row, col } = result;
+          setConnectFourBoard(newBoard);
+          setBotBoard(newBoard);
+          setLastMove({ row, col });
+          
+          if (checkWin(newBoard, row, col, 2)) {
+            setConnectFourWinner('bot');
+            setConnectFourGameOver(true);
+            setConnectFourBotScore(prev => prev + 1);
+          } else if (isBoardFull(newBoard)) {
+            setConnectFourWinner('tie');
+            setConnectFourGameOver(true);
+          } else {
+            setCurrentPlayer('player');
+          }
+        }
+      }, 500); // Bot thinks for 500ms
       
-      // Bot piece movement (Q-learning, greedy)
-      if (tetrisBotPiece) {
-        const choice = chooseTetrisBotMoveRL(tetrisBotBoard, tetrisBotPiece);
-        if (!choice) {
-          setTetrisWinner('player');
-          setTetrisGameOver(true);
-          return;
-        }
+      return () => clearTimeout(timer);
+    }
+  }, [currentPlayer, connectFourGameStarted, connectFourGameOver, connectFourBoard, calculateBotMove, makeMove, checkWin, isBoardFull]);
 
-        // TD update using previous (phi, Q) if available
-        const reward =
-          choice.linesCleared * 1.0 // positive for clearing lines
-          // small regularizers from next state's features (costs)
-          - choice.phiNext[1] * 0.5    // aggregate height
-          - choice.phiNext[2] * 1.0    // holes
-          - choice.phiNext[3] * 0.2;   // bumpiness
 
-        if (prevPhiRef.current && prevQRef.current !== null) {
-          const target = reward + gammaRef.current * choice.qNext;
-          const delta = target - prevQRef.current;
-          // w = w + alpha * delta * phi_prev
-          const w = rlWeightsRef.current.slice();
-          for (let i = 0; i < w.length; i++) w[i] += alphaRef.current * delta * prevPhiRef.current[i];
-          rlWeightsRef.current = w;
-          // Optional: decay epsilon a bit
-          epsilonRef.current = Math.max(0.02, epsilonRef.current * 0.999);
-        }
-
-        // Execute chosen action on the real board
-        let rotatedBotPiece = { ...tetrisBotPiece };
-        for (let r = 0; r < choice.rotation; r++) rotatedBotPiece = rotatePiece(rotatedBotPiece);
-        rotatedBotPiece.x = choice.x;
-
-        // Drop down using collision check to match simulation
-        let botY = rotatedBotPiece.y;
-        while (!checkTetrisCollision({ ...rotatedBotPiece, y: botY + 1 }, tetrisBotBoard)) botY++;
-
-        const newBotBoard = placePiece({ ...rotatedBotPiece, y: botY }, tetrisBotBoard);
-        const clearedBotBoard = clearBotLines(newBotBoard);
-        setTetrisBotBoard(clearedBotBoard);
-
-        // Prepare next state for learning (phi, Q)
-        prevPhiRef.current = choice.phiNext;
-        prevQRef.current = choice.qNext;
-
-        // Generate new bot piece from shared queue
-        const newBotPiece = generateNewPiece();
-        if (checkTetrisCollision(newBotPiece, clearedBotBoard)) {
-          setTetrisWinner('player');
-          setTetrisGameOver(true);
-        } else {
-          setTetrisBotPiece(newBotPiece);
-        }
-      }
-    }, Math.max(120, 700 - (tetrisLevel * 60)));
-
-    return () => clearInterval(tetrisLoop);
-  }, [tetrisGameStarted, tetrisGameOver, tetrisPaused, tetrisLevel, movePiece, tetrisBotPiece, tetrisBotBoard, calculateTetrisBotMove, rotatePiece, checkTetrisCollision, placePiece, clearBotLines, generateNewPiece]);
-
-  // Tetris keyboard controls
-  useEffect(() => {
-    const handleTetrisKeyPress = (event: KeyboardEvent) => {
-      if (!tetrisGameStarted || tetrisGameOver || tetrisPaused) return;
-
-      // Prevent default behavior for game keys to avoid page scrolling
-      if (['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp', ' '].includes(event.key)) {
-        event.preventDefault();
-      }
-
-      switch (event.key) {
-        case 'ArrowLeft':
-          movePiece(-1, 0);
-          break;
-        case 'ArrowRight':
-          movePiece(1, 0);
-          break;
-        case 'ArrowDown':
-          movePiece(0, 1);
-          break;
-        case 'ArrowUp':
-          const rotated = rotatePiece(currentPiece!);
-          if (!checkTetrisCollision(rotated, tetrisBoard)) {
-            setCurrentPiece(rotated);
-          }
-          break;
-        case ' ':
-          // Hard drop - move piece all the way down
-          if (currentPiece) {
-            let dropDistance = 0;
-            while (!checkTetrisCollision({ ...currentPiece, y: currentPiece.y + dropDistance + 1 }, tetrisBoard)) {
-              dropDistance++;
-            }
-            if (dropDistance > 0) {
-              movePiece(0, dropDistance);
-            }
-          }
-          break;
-        case 'p':
-        case 'P':
-          setTetrisPaused(prev => !prev);
-          break;
-      }
-    };
-
-    document.addEventListener('keydown', handleTetrisKeyPress);
-    return () => document.removeEventListener('keydown', handleTetrisKeyPress);
-  }, [tetrisGameStarted, tetrisGameOver, tetrisPaused, currentPiece, movePiece, rotatePiece, checkTetrisCollision]);
 
   // Handle keyboard input
   const handleKeyPress = useCallback((event: KeyboardEvent) => {
@@ -860,7 +654,7 @@ const Index = () => {
     setGameStarted(true);
     setGameOver(false);
     setScore(0);
-    setBotScore(0);
+    setSnakeBotScore(0);
     setSnake([{ x: 5, y: 5 }]);
     setBotSnake([{ x: 15, y: 15 }]);
     setDirection({ x: 1, y: 0 });
@@ -877,7 +671,7 @@ const Index = () => {
     setGameStarted(false);
     setGameOver(false);
     setScore(0);
-    setBotScore(0);
+    setSnakeBotScore(0);
     setSnake([{ x: 5, y: 5 }]);
     setBotSnake([{ x: 15, y: 15 }]);
     setDirection({ x: 1, y: 0 });
@@ -952,130 +746,18 @@ const Index = () => {
     setTouchStart(null);
   };
 
-  // Initialize Tetris boards on component mount
-  // Initialize empty boards for display (no pieces until game starts)
+  // Initialize Connect Four board on component mount
   useEffect(() => {
-    if (!tetrisBoard.length) {
-      const initialBoard = Array(TETRIS_HEIGHT).fill(null).map(() => Array(TETRIS_WIDTH).fill(0));
-      setTetrisBoard(initialBoard);
-      setTetrisBotBoard(initialBoard);
+    if (!connectFourBoard.length) {
+      const initialBoard = Array(CONNECT_FOUR_ROWS).fill(null).map(() => Array(CONNECT_FOUR_COLS).fill(0));
+      setConnectFourBoard(initialBoard);
+      setBotBoard(initialBoard);
     }
-  }, [tetrisBoard.length]);
+  }, [connectFourBoard.length]);
 
-  // ---- RL helpers (pure, no state side-effects) ----
-  const cloneBoard = (board: number[][]) => board.map(r => [...r]);
 
-  const placePiecePure = (piece: { shape: number[][]; x: number; y: number }, board: number[][]) => {
-    const newBoard = cloneBoard(board);
-    for (let y = 0; y < piece.shape.length; y++) {
-      for (let x = 0; x < piece.shape[y].length; x++) {
-        if (piece.shape[y][x]) {
-          const bx = piece.x + x, by = piece.y + y;
-          if (by >= 0 && by < TETRIS_HEIGHT && bx >= 0 && bx < TETRIS_WIDTH) {
-            newBoard[by][bx] = 1;
-          }
-        }
-      }
-    }
-    return newBoard;
-  };
 
-  const clearLinesPure = (board: number[][]): { cleared: number; board: number[][] } => {
-    let cleared = 0;
-    const kept = board.filter(row => {
-      const full = row.every(c => c === 1);
-      if (full) cleared++;
-      return !full;
-    });
-    while (kept.length < TETRIS_HEIGHT) kept.unshift(Array(TETRIS_WIDTH).fill(0));
-    return { cleared, board: kept };
-  };
 
-  const columnHeights = (board: number[][]) => {
-    const heights = Array(TETRIS_WIDTH).fill(0);
-    for (let x = 0; x < TETRIS_WIDTH; x++) {
-      for (let y = 0; y < TETRIS_HEIGHT; y++) {
-        if (board[y][x]) { heights[x] = TETRIS_HEIGHT - y; break; }
-      }
-    }
-    return heights;
-  };
-
-  const countHoles = (board: number[][]) => {
-    let holes = 0;
-    for (let x = 0; x < TETRIS_WIDTH; x++) {
-      let seenBlock = false;
-      for (let y = 0; y < TETRIS_HEIGHT; y++) {
-        if (board[y][x]) seenBlock = true;
-        else if (seenBlock && !board[y][x]) holes++;
-      }
-    }
-    return holes;
-  };
-
-  const bumpiness = (heights: number[]) => {
-    let sum = 0;
-    for (let x = 0; x < TETRIS_WIDTH - 1; x++) sum += Math.abs(heights[x] - heights[x + 1]);
-    return sum;
-  };
-
-  const featuresFromBoard = (board: number[][]): number[] => {
-    const h = columnHeights(board);
-    const aggHeight = h.reduce((a, b) => a + b, 0);
-    const holes = countHoles(board);
-    const bump = bumpiness(h);
-
-    // Normalize to reasonable ranges
-    const aggHeightN = aggHeight / (TETRIS_WIDTH * TETRIS_HEIGHT);
-    const holesN = holes / (TETRIS_WIDTH * TETRIS_HEIGHT);
-    const bumpN = bump / (TETRIS_WIDTH * 2);
-
-    return [1, aggHeightN, holesN, bumpN]; // bias, height, holes, bumpiness
-  };
-
-  const dot = (w: number[], x: number[]) => w.reduce((s, wi, i) => s + wi * x[i], 0);
-
-  
-
-  // Enumerate bot actions, epsilon-greedy over Q(s,a) ~= w · phi(s')
-  const chooseTetrisBotMoveRL = (
-    board: number[][],
-    piece: { shape: number[][]; x: number; y: number; type: string }
-  ): { x: number; rotation: number; y: number; phiNext: number[]; qNext: number; linesCleared: number; simBoard: number[][] } | null => {
-    const candidates: { x: number; rotation: number; y: number; phi: number[]; q: number; linesCleared: number; simBoard: number[][] }[] = [];
-
-    for (let rotation = 0; rotation < 4; rotation++) {
-      let rotated = { ...piece };
-      for (let r = 0; r < rotation; r++) rotated = rotatePiece(rotated);
-
-      for (let x = -2; x <= TETRIS_WIDTH + 2; x++) {
-        const test = { ...rotated, x };
-        // Drop to lowest valid y
-        let y = test.y;
-        while (!checkTetrisCollision({ ...test, y }, board)) y++;
-        y--;
-
-        if (y >= 0) {
-          const placed = placePiecePure({ ...test, y }, board);
-          const { cleared, board: afterClear } = clearLinesPure(placed);
-          const phi = featuresFromBoard(afterClear);
-          const q = dot(rlWeightsRef.current, phi);
-          candidates.push({ x, rotation, y, phi, q, linesCleared: cleared, simBoard: afterClear });
-        }
-      }
-    }
-
-    if (candidates.length === 0) return null;
-
-    // epsilon-greedy
-    if (Math.random() < epsilonRef.current) {
-      const c = candidates[Math.floor(Math.random() * candidates.length)];
-      return { x: c.x, rotation: c.rotation, y: c.y, phiNext: c.phi, qNext: c.q, linesCleared: c.linesCleared, simBoard: c.simBoard };
-    }
-    candidates.sort((a, b) => b.q - a.q);
-    const best = candidates[0];
-    return { x: best.x, rotation: best.rotation, y: best.y, phiNext: best.phi, qNext: best.q, linesCleared: best.linesCleared, simBoard: best.simBoard };
-  };
 
   return (
     <div className="min-h-screen bg-black text-yellow-400 font-mono flex flex-col">
@@ -1312,7 +994,7 @@ const Index = () => {
                 <div className="bg-red-800 px-4 py-2 rounded border border-red-600">
                   <div className="text-center">
                     <div className="text-sm text-red-300">🤖 Bot</div>
-                    <div className="text-lg font-bold">{botScore}</div>
+                    <div className="text-lg font-bold">{snakeBotScore}</div>
                   </div>
                 </div>
               </div>
@@ -1446,7 +1128,7 @@ const Index = () => {
                     
                     {/* Bot Results */}
                     <div className="bg-red-800 p-4 rounded border border-red-600">
-                      <h3 className="text-xl font-bold mb-3">🤖 Bot Score: {botScore}</h3>
+                      <h3 className="text-xl font-bold mb-3">🤖 Bot Score: {snakeBotScore}</h3>
                       <div className="space-y-2 max-h-40 overflow-y-auto">
                         {botCollectedExperiences.map((exp, index) => (
                           <div key={index} className="bg-red-700 p-2 rounded text-sm">
@@ -1479,19 +1161,19 @@ const Index = () => {
         {/* Border */}
         <div className="border-t-2 border-yellow-400 mx-4 lg:mx-8"></div>
 
-        {/* Tetris Game Section */}
+        {/* Connect Four Game Section */}
         <div className="p-4 lg:p-8">
-          {/* Tetris Title and Description */}
+          {/* Connect Four Title and Description */}
           <div className="text-center space-y-6 mb-8">
-            <div className="text-3xl lg:text-4xl mb-4 lg:mb-8">🎮</div>
-            <h2 className="text-2xl lg:text-3xl font-bold">PROJECTS (TETRIS)</h2>
+            <div className="text-3xl lg:text-4xl mb-4 lg:mb-8">🔴🔵</div>
+            <h2 className="text-2xl lg:text-3xl font-bold">PROJECTS (CONNECT FOUR)</h2>
             <div className="text-sm lg:text-lg space-y-2">
               <p>Beat an epsilon-greedy Q-learning bot</p>
-              <p>Use side arrow keys to move, up arrow to rotate, space to drop</p>
+              <p>Click on a column to drop your piece</p>
             </div>
-            {!tetrisGameStarted && (
+            {!connectFourGameStarted && (
                 <button
-                onClick={startTetrisGame}
+                onClick={startConnectFourGame}
                 className="px-6 lg:px-8 py-3 lg:py-4 bg-yellow-600 text-black font-bold border-2 border-yellow-400 hover:bg-yellow-700 transition-colors text-sm lg:text-base"
                 >
                 PLAY GAME
@@ -1499,244 +1181,75 @@ const Index = () => {
             )}
               </div>
               
-          {/* Player and Bot Boards */}
-          <div className="flex flex-col lg:flex-row gap-8 justify-center mb-8">
-              {/* Player Tetris Board */}
-              <div className="flex flex-col items-center">
-                <h3 className="text-lg font-bold text-yellow-300 mb-4">👤 YOU</h3>
-
-              <div className="flex flex-col items-center space-y-4">
-                {/* Player Score */}
-                <div className="text-center">
-                  <div className="text-sm text-yellow-300 space-y-1">
-                    <div>Score: {tetrisScore}</div>
-                    <div>Lines: {tetrisLines}</div>
-                </div>
-                </div>
-                
-                {/* Player Game Board */}
-                <div className="border-2 border-yellow-400 bg-black p-2 relative">
-                  <div 
-                    className="grid gap-0"
-                    style={{
-                      gridTemplateColumns: `repeat(${TETRIS_WIDTH}, 20px)`,
-                      gridTemplateRows: `repeat(${TETRIS_HEIGHT}, 20px)`
-                    }}
-                  >
-                    {/* Render board */}
-                    {tetrisBoard.map((row, y) =>
-                      row.map((cell, x) => (
-                        <div
-                          key={`player-${x}-${y}`}
-                          className={`w-5 h-5 border border-gray-800 ${
-                            cell ? 'bg-yellow-400' : 'bg-black'
-                          }`}
-                        />
-                      ))
-                    )}
-                    
-                    {/* Render current piece */}
-                    {currentPiece && currentPiece.shape.map((row, y) =>
-                      row.map((cell, x) => {
-                        if (!cell) return null;
-                        const boardX = currentPiece.x + x;
-                        const boardY = currentPiece.y + y;
-                        if (boardY < 0) return null;
-                        
-                        return (
-                          <div
-                            key={`player-piece-${x}-${y}`}
-                            className="w-5 h-5 border border-yellow-300 absolute"
-                            style={{
-                              backgroundColor: tetrisPieces[currentPiece.type as keyof typeof tetrisPieces].color,
-                              left: `${boardX * 20 + 8}px`,
-                              top: `${boardY * 20 + 8}px`
-                            }}
-                          />
-                        );
-                      })
-                    )}
-                    </div>
-                </div>
-                
-                {/* Next Piece for Player */}
-                <div className="text-center">
-                  <h4 className="text-yellow-300 text-sm font-bold mb-2">NEXT</h4>
-                  <div className="border border-yellow-400 bg-black p-2">
-                    <div className="grid gap-0" style={{ gridTemplateColumns: 'repeat(4, 15px)', gridTemplateRows: 'repeat(4, 15px)' }}>
-                      {nextPiece && tetrisPieces[nextPiece as keyof typeof tetrisPieces].shape.map((row, y) =>
-                        row.map((cell, x) => (
-                          <div
-                            key={`player-next-${x}-${y}`}
-                            className={`w-4 h-4 border border-gray-800 ${
-                              cell ? 'bg-yellow-400' : 'bg-black'
-                            }`}
-                            style={{
-                              backgroundColor: cell ? tetrisPieces[nextPiece as keyof typeof tetrisPieces].color : undefined
-                            }}
-                          />
-                        ))
+          {/* Game Board */}
+          <div className="flex flex-col items-center mb-8">
+            {/* Game Status */}
+            <div className="text-center mb-4">
+              <div className="text-lg font-bold text-yellow-300 mb-2">
+                {connectFourGameOver ? (
+                  connectFourWinner === 'player' ? '🎉 YOU WIN! 🎉' :
+                  connectFourWinner === 'bot' ? '🤖 BOT WINS! 🤖' :
+                  "🤝 IT'S A TIE! 🤝"
+                ) : (
+                  `Current Player: ${currentPlayer === 'player' ? '🔴 You' : '🔵 Bot'}`
+                )}
+              </div>
+              <div className="text-sm text-yellow-300 space-y-1">
+                <div>Player Score: {playerScore}</div>
+                <div>Bot Score: {connectFourBotScore}</div>
+              </div>
+            </div>
+            
+            {/* Connect Four Board */}
+            <div className="border-4 border-yellow-400 bg-blue-900 p-4 rounded-lg">
+              <div 
+                className="grid gap-1"
+                style={{
+                  gridTemplateColumns: `repeat(${CONNECT_FOUR_COLS}, 50px)`,
+                  gridTemplateRows: `repeat(${CONNECT_FOUR_ROWS}, 50px)`
+                }}
+              >
+                {connectFourBoard.map((row, y) =>
+                  row.map((cell, x) => (
+                    <div
+                      key={`${x}-${y}`}
+                      className={`w-12 h-12 rounded-full border-2 border-gray-800 flex items-center justify-center ${
+                        cell === 0 ? 'bg-gray-700 hover:bg-gray-600 cursor-pointer' :
+                        cell === 1 ? 'bg-red-500' :
+                        'bg-blue-500'
+                      } ${lastMove && lastMove.row === y && lastMove.col === x ? 'ring-4 ring-yellow-300' : ''}`}
+                      onClick={() => !connectFourGameOver && currentPlayer === 'player' && handlePlayerMove(x)}
+                    >
+                      {cell === 0 && currentPlayer === 'player' && !connectFourGameOver && (
+                        <div className="w-8 h-8 rounded-full bg-red-400 opacity-50"></div>
                       )}
-                </div>
-                </div>
-                  <p className="text-yellow-300 text-xs mt-1">
-                    {nextPiece && experiences.find(exp => exp.id === tetrisPieces[nextPiece as keyof typeof tetrisPieces].project)?.name}
-                  </p>
-                </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
-
-            {/* Bot Tetris Board */}
-            <div className="flex flex-col items-center">
-              <h3 className="text-lg font-bold text-red-300 mb-4">🤖 BOT</h3>
-              <div className="flex flex-col items-center space-y-4">
-                {/* Bot Score */}
-                <div className="text-center">
-                  <div className="text-sm text-red-300 space-y-1">
-                    <div>Score: {tetrisBotScore}</div>
-                    <div>Level: {tetrisLevel}</div>
-                    <div>Lines: {tetrisBotLines}</div>
-                </div>
-                </div>
-                
-                {/* Bot Game Board */}
-                <div className="border-2 border-red-400 bg-black p-2 relative">
-                  <div 
-                    className="grid gap-0"
-                    style={{
-                      gridTemplateColumns: `repeat(${TETRIS_WIDTH}, 20px)`,
-                      gridTemplateRows: `repeat(${TETRIS_HEIGHT}, 20px)`
-                    }}
-                  >
-                    {/* Render bot board */}
-                    {tetrisBotBoard.map((row, y) =>
-                      row.map((cell, x) => (
-                        <div
-                          key={`bot-${x}-${y}`}
-                          className={`w-5 h-5 border border-gray-800 ${
-                            cell ? 'bg-red-400' : 'bg-black'
-                          }`}
-                        />
-                      ))
-                    )}
-                    
-                    {/* Render bot current piece */}
-                    {tetrisBotPiece && tetrisBotPiece.shape.map((row, y) =>
-                      row.map((cell, x) => {
-                        if (!cell) return null;
-                        const boardX = tetrisBotPiece.x + x;
-                        const boardY = tetrisBotPiece.y + y;
-                        if (boardY < 0) return null;
-                        
-                        return (
-                          <div
-                            key={`bot-piece-${x}-${y}`}
-                            className="w-5 h-5 border border-red-300 absolute"
-                            style={{
-                              backgroundColor: tetrisPieces[tetrisBotPiece.type as keyof typeof tetrisPieces].color,
-                              left: `${boardX * 20 + 8}px`,
-                              top: `${boardY * 20 + 8}px`
-                            }}
-                          />
-                        );
-                      })
-                    )}
-                </div>
-                </div>
-                
-                {/* Next Piece for Bot */}
-                <div className="text-center">
-                  <h4 className="text-red-300 text-sm font-bold mb-2">NEXT</h4>
-                  <div className="border border-red-400 bg-black p-2">
-                    <div className="grid gap-0" style={{ gridTemplateColumns: 'repeat(4, 15px)', gridTemplateRows: 'repeat(4, 15px)' }}>
-                      {nextPiece && tetrisPieces[nextPiece as keyof typeof tetrisPieces].shape.map((row, y) =>
-                        row.map((cell, x) => (
-                          <div
-                            key={`bot-next-${x}-${y}`}
-                            className={`w-4 h-4 border border-gray-800 ${
-                              cell ? 'bg-red-400' : 'bg-black'
-                            }`}
-                            style={{
-                              backgroundColor: cell ? tetrisPieces[nextPiece as keyof typeof tetrisPieces].color : undefined
-                            }}
-                          />
-                        ))
-              )}
-            </div>
-                  </div>
-                  <p className="text-red-300 text-xs mt-1">
-                    {nextPiece && experiences.find(exp => exp.id === tetrisPieces[nextPiece as keyof typeof tetrisPieces].project)?.name}
-                  </p>
-                  </div>
-                  </div>
-                </div>
-              </div>
-
-          {/* Game Controls */}
-          {tetrisGameStarted && (
-            <div className="text-center mt-8">
-              <div className="text-xs text-yellow-300 space-y-1 mb-4">
-                <div>← → Move | ↑ Rotate | ↓ Soft Drop | Space Hard Drop | P Pause</div>
-              </div>
-              <div className="space-x-2">
+            
+            {/* Game Controls */}
+            {connectFourGameStarted && (
+              <div className="mt-6 space-x-4">
                 <button
-                  onClick={() => setTetrisPaused(prev => !prev)}
-                  className="px-3 py-1 bg-yellow-600 text-black text-xs font-bold border border-yellow-400 hover:bg-yellow-700 transition-colors"
+                  onClick={startConnectFourGame}
+                  className="px-6 py-3 bg-yellow-600 text-black font-bold border border-yellow-400 hover:bg-yellow-700 transition-colors"
                 >
-                  {tetrisPaused ? 'RESUME' : 'PAUSE'}
+                  NEW GAME
                 </button>
                 <button
-                  onClick={resetTetrisGame}
-                  className="px-3 py-1 bg-red-600 text-white text-xs font-bold border border-red-400 hover:bg-red-700 transition-colors"
+                  onClick={resetConnectFourGame}
+                  className="px-6 py-3 bg-red-600 text-white font-bold border border-red-400 hover:bg-red-700 transition-colors"
                 >
                   RESET
                 </button>
-                </div>
               </div>
-          )}
+            )}
+          </div>
+
+
         </div>
-                
-        {/* Tetris Game Over */}
-        {tetrisGameOver && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50">
-            <div className="text-center space-y-4 bg-yellow-900 p-8 border-2 border-yellow-400 max-w-4xl">
-              <h2 className="text-2xl font-bold">
-                {tetrisWinner === 'player' ? "🎉 YOU WIN! 🎉" :
-                 tetrisWinner === 'bot' ? "🤖 BOT WINS! 🤖" :
-                 "GAME OVER!"}
-              </h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                {/* Player Results */}
-                <div className="bg-yellow-800 p-4 rounded border border-yellow-600">
-                  <h3 className="text-xl font-bold mb-3">👤 Your Score: {tetrisScore}</h3>
-                  <p className="text-yellow-300 text-sm">Lines: {tetrisLines}</p>
-            </div>
-            
-                {/* Bot Results */}
-                <div className="bg-red-800 p-4 rounded border border-red-600">
-                  <h3 className="text-xl font-bold mb-3">🤖 Bot Score: {tetrisBotScore}</h3>
-                  <p className="text-red-300 text-sm">Lines: {tetrisBotLines}</p>
-                        </div>
-              </div>
-              
-              <div className="mt-6 space-x-4">
-                <button
-                  onClick={startTetrisGame}
-                  className="px-6 py-3 bg-yellow-600 text-black font-bold border border-yellow-400 hover:bg-yellow-700 transition-colors"
-                >
-                  PLAY AGAIN
-                </button>
-                <button
-                  onClick={resetTetrisGame}
-                  className="px-6 py-3 bg-red-600 text-white font-bold border border-red-400 hover:bg-red-700 transition-colors"
-                >
-                  MAIN MENU
-                </button>
-                      </div>
-                    </div>
-              </div>
-        )}
 
         {/* Border */}
 
