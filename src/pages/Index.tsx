@@ -1380,8 +1380,6 @@ const Index = () => {
                 {!connectFourGameOver && `Current Player: ${currentPlayer === 'player' ? '🔴 You' : '🔵 Bot'}`}
               </div>
               <div className="text-sm text-yellow-300 space-y-1">
-                <div>Player Score: {playerScore}</div>
-                <div>Bot Score: {connectFourBotScore}</div>
                 <div>Games Played: {gamesPlayedRef.current}</div>
               </div>
             </div>
