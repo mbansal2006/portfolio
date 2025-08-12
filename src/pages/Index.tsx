@@ -90,6 +90,7 @@ const Index = () => {
     { id: "hashtag", name: "The Worst Invention of the 21st Century", type: "achievement", location: "Portfolio", description: "A critique of the hashtag.", color: "#FFEAA7", points: 25, impressiveness: 7 },
     { id: "stakes", name: "The Stakes of the AI Race", type: "achievement", location: "Portfolio", description: "Reflecting on the AI race.", color: "#FFEAA7", points: 25, impressiveness: 8 },
     { id: "intel", name: "The Endurance of Intelligence", type: "achievement", location: "Portfolio", description: "Reflections on the future of intelligence.", color: "#FFEAA7", points: 25, impressiveness: 8 },
+    { id: "adaptive-sycophancy", name: "Adaptive Sycophancy", type: "achievement", location: "Portfolio", description: "A case for adaptive guardrails.", color: "#FFEAA7", points: 25, impressiveness: 8 },
     
   ];
 
