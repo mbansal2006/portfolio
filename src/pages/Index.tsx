@@ -1383,7 +1383,6 @@ const Index = () => {
                 <div>Player Score: {playerScore}</div>
                 <div>Bot Score: {connectFourBotScore}</div>
                 <div>Games Played: {gamesPlayedRef.current}</div>
-                <div>Exploration Rate: {epsilonRef.current.toFixed(2)}</div>
               </div>
             </div>
             
