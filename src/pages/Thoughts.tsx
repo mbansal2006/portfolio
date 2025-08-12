@@ -45,6 +45,9 @@ const Thoughts = () => {
           >
             🏠 Home
           </Link>
+          <div className="px-4 py-2 bg-yellow-600 text-white font-bold border border-yellow-400 rounded opacity-50">
+            📝 Writings
+          </div>
           <Link
             to="/frontier"
             className="px-4 py-2 bg-orange-600 text-white font-bold hover:bg-orange-700 transition-colors border border-orange-400 rounded"
@@ -73,6 +76,22 @@ const Thoughts = () => {
           >
             📧 Email
           </a>
+          <a
+            href="https://drive.google.com/file/d/1roTioVMkGKi3oM-4IJn8BsYVifJdzhPV/view?usp=sharing"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 bg-orange-600 text-white font-bold hover:bg-orange-700 transition-colors border border-orange-400 rounded"
+          >
+            📄 Resume
+          </a>
+          <a
+            href="https://github.com/mbansal2006"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 bg-gray-600 text-white font-bold hover:bg-gray-700 transition-colors border border-gray-400 rounded"
+          >
+            💻 GitHub
+          </a>
         </div>
       </div>
 
@@ -95,7 +114,7 @@ const Thoughts = () => {
       {/* Essays Grid */}
       <div className="max-w-7xl mx-auto px-6 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {essays.slice().reverse().map((essay) => (
+          {essays.map((essay) => (
             <EssayCard
               key={essay.id}
               essay={essay}

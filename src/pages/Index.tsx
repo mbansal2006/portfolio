@@ -330,6 +330,9 @@ const Index = () => {
           
           {/* Mobile Navigation - Compact */}
           <div className="grid grid-cols-4 gap-2">
+            <div className="px-2 py-1 bg-black text-white text-xs font-bold border border-yellow-400 rounded text-center opacity-50">
+              🏠 Home
+            </div>
             <Link
               to="/thoughts"
               className="px-2 py-1 bg-yellow-600 text-white text-xs font-bold hover:bg-yellow-700 transition-colors border border-yellow-400 rounded text-center"
@@ -398,6 +401,9 @@ const Index = () => {
           
           {/* Desktop Navigation Links */}
           <div className="flex flex-wrap gap-3 justify-center">
+            <div className="px-4 py-2 bg-black text-white font-bold border border-yellow-400 rounded opacity-50">
+              🏠 Home
+            </div>
             <Link
               to="/thoughts"
               className="px-4 py-2 bg-yellow-600 text-white font-bold hover:bg-yellow-700 transition-colors border border-yellow-400 rounded"

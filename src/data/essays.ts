@@ -2,6 +2,230 @@ import { Essay } from "@/components/EssayCard";
 
 export const essays: Essay[] = [
   {
+    id: "sycophancy-to-sterility",
+    title: "Adaptive Sycophancy",
+    description: "An exploration of AI's pendulum swing between being overly agreeable and emotionally distant, and the need for adaptive guardrails that balance creativity with safety.",
+    excerpt: "The New York Times ran a detailed investigation into a 'delusional spiral' triggered over a 21-day chat with a mainstream AI assistant. The transcript shows a pattern many of us have seen: flattery, agreement, narrative escalation, and a model that keeps 'yes and' ing instead of reality-checking.",
+    downloadLink: "https://drive.google.com/file/d/1iXWV-9emateiOBNc5iMy9ohjnSXQ6R14/view?usp=sharing",
+    content: `
+      <div class="max-w-4xl mx-auto px-4 py-8">
+        <div class="mb-8">
+                      <h1 class="text-4xl font-bold text-foreground mb-4">
+              Adaptive Sycophancy
+            </h1>
+        </div>
+
+        <div class="prose max-w-none">
+          <p>
+            The New York Times ran a detailed investigation into a "delusional spiral" triggered over a 21-day chat with a mainstream AI assistant. The transcript shows a pattern many of us have seen: flattery, agreement, narrative escalation, and a model that keeps "yes and" ing instead of reality-checking. They argue this is is not an edge case anymore.
+          </p>
+
+          <p>
+            This is exactly what humans do. We don't speak to everyone in the same way, with the same level of agreement or pushback, on every topic. We adapt. More cautious with a friend in crisis, more challenging with a colleague in a debate, more exploratory with someone we trust to think out loud. We adapt based on the subject, the stakes, and what we know about the other person's knowledge and temperament. If we expect AI to be a genuine companion, it needs to be able to do the same. It needs to understand where we're at and what being aligned means for us.
+          </p>
+
+          <p>
+            OpenAI already acknowledged one driver. In late April it rolled back a GPT-4o update after users reported behavior that was "overly flattering or agreeable," and published a <a href="https://openai.com/index/sycophancy-in-gpt-4o/" target="_blank" rel="noopener noreferrer">follow-up</a> on what went wrong. The new GPT-5 release explicitly claims reduced sycophancy. That's good, and also where a new problem shows up. Many users experience GPT-5 as flat, emotionally distant, and less collaborative. The pendulum swung from "too agreeable" to "too sterile."
+          </p>
+
+          <p>
+            Sam Altman highlighted this double edged sword in an interview with Cleo Abrams. Saying that for some users this behavior in GPT-4o was valuable and even "encouraged" them to make positive changes in their lives.
+          </p>
+
+          <blockquote>
+            <p>"As we've been making those changes and talking to users about it, it's so sad to hear users say, 'Please can I have it back? I've never had anyone in my life be supportive of me. I never had a parent tell me I was doing a good job. I can get why this was bad for other people's mental health, but this was great for my mental health'"</p>
+          </blockquote>
+
+          <p>
+            There's a second ingredient worth noting. "Cross-chat memory" and similar features that carry context forward can increase narrative inertia. With memory, fresh conversations aren't "fresh". They carry memory from your other conversations. That can be extremely useful, but it also makes long-running delusional arcs harder to interrupt if the stance never resets.
+          </p>
+
+          <p>
+            The research community has warned for years that reinforced learning from human feedback (RLHF, a technique to improve models with human feedback) tends to reward "agreeable" answers. Optimizing for preference models can trade truthfulness for validation. We should not be surprised that people liked how 4o felt.
+          </p>
+
+          <p>
+            The trick is to keep the good parts without recreating the spiral. NYT's argument is incredibly important, but it needs to be a constructive. We need to go back to the lab and build. This cannot be another Three Mile Island.
+          </p>
+
+          <h2>Static Guardrails</h2>
+
+          <p>
+            Static guardrails do not fit diverse users. Some will be at risk, some will not. This is not one-size fits all. I believe we need adaptive guardrails that change the model's posture per user and per topic. Products need to understand how a user thinks and what that means for responses.
+          </p>
+
+          <p>
+            Sterility also blocks more than vibes. It blocks the kind of contrarian exploration that matters for the Lovelace test: producing something genuinely new that was not explicitly specified. If the model never takes creative risks, if it never goes beyond conventional wisdom, it never crosses that bar. If it takes risks blindly, you can recreate the NYT failure mode.
+          </p>
+
+          <p>
+            The way through is not just through "more safety prompts" or shutting down functionality. It is a formal routing layer that decides when to push back, when to co-create, and when to slow down.
+          </p>
+
+          <h2>Adaptive Guardrails (Rough Sketch)</h2>
+
+          <p>
+            This risk is context dependent. Some users may be at risk for certain topics and not be for others. Alignment means to align with the user's profile. I'm proposing modeling a user as a set of belief nodes with confidence and realism:
+          </p>
+
+          <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded mb-6">
+            <p class="text-center font-mono">
+              U = {(b<sub>i</sub>, 𝐞<sub>i</sub>, C<sub>i</sub>, R<sub>i</sub>)}<sub>i=1</sub><sup>n</sup>
+            </p>
+          </div>
+
+          <ul>
+            <li><strong>b<sub>i</sub>:</strong> belief statement</li>
+            <li><strong>𝐞<sub>i</sub> ∈ ℝ<sup>d</sup>:</strong> embedding of b<sub>i</sub></li>
+            <li><strong>C<sub>i</sub> ∈ [0,1]:</strong> confidence, how hard the belief is to update</li>
+            <li><strong>R<sub>i</sub> ∈ [0,1]:</strong> realism, proximity to consensus reality</li>
+          </ul>
+
+          <p>
+            Some examples that might be helpful in calibrating an initial profile:
+          </p>
+
+          <ul>
+            <li>"I'm good at public speaking."</li>
+            <li>"I am the life of the party."</li>
+            <li>"I don't talk a lot."</li>
+            <li>"I worry that something is wrong with me."</li>
+            <li>"My manager is trying to push me out."</li>
+            <li>"I'm a fast talker."</li>
+            <li>"I've had times where I felt I was destined for something important."</li>
+          </ul>
+
+          <p>
+            Each gets an embedding, a confidence score, and a realism score.
+          </p>
+
+          <h3>Mapping prompts to beliefs:</h3>
+
+          <p>
+            Given a new prompt p with embedding 𝐞<sub>p</sub>:
+          </p>
+
+          <ol>
+            <li>Find nearest neighbors<br>
+            N<sub>k</sub>(p) = kNN(𝐞<sub>p</sub>, {𝐞<sub>i</sub>}, k)</li>
+            <li>Aggregate local stance statistics<br>
+            <span style="text-decoration: overline;">C</span>(p) = (1/k)∑<sub>i∈N<sub>k</sub></sub> C<sub>i</sub>, <span style="text-decoration: overline;">R</span>(p) = (1/k)∑<sub>i∈N<sub>k</sub></sub> R<sub>i</sub></li>
+            <li>Track uncertainty<br>
+            U(p) = √(Var({C<sub>i</sub>}) + Var({R<sub>i</sub>}))</li>
+          </ol>
+
+          <p>
+            If similarity is low, fall back to domain priors and stay neutral.
+          </p>
+
+          <h3>Routing function:</h3>
+
+          <p>
+            Define a stance-risk score
+          </p>
+
+          <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded mb-6">
+            <p class="text-center font-mono">
+              risk(p) = w<sub>1</sub>(1-<span style="text-decoration: overline;">R</span>(p)) + w<sub>2</sub><span style="text-decoration: overline;">C</span>(p) + w<sub>3</sub>U(p)
+            </p>
+          </div>
+
+          <p>
+            and pick a stance region:
+          </p>
+
+          <ul>
+            <li><strong>High risk</strong> → high pushback, require verification, keep answers short.</li>
+            <li><strong>Medium risk</strong> → clarify assumptions, provide evidence, offer alternatives.</li>
+            <li><strong>Low risk</strong> → concise, direct, collaborative.</li>
+          </ul>
+
+          <p>
+            This is not about being agreeable. It is about being situational.
+          </p>
+
+          <h3>Stance templates as control vectors:</h3>
+
+          <p>
+            Each stance maps to a compact control vector
+          </p>
+
+          <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded mb-6">
+            <p class="text-center font-mono">
+              𝐬(p) = [pushback, hedging, cite_density, engagement_mode]
+            </p>
+          </div>
+
+          <p>
+            Examples:
+          </p>
+
+          <ul>
+            <li><strong>High-risk factual:</strong> pushback 0.9, hedging 0.7, cite 1.0, engagement "factual"</li>
+            <li><strong>Low-risk collaborative:</strong> pushback 0.1, hedging 0.2, cite 0.3, engagement "co-create"</li>
+          </ul>
+
+          <p>
+            These parameters fill system-prompt templates and can also steer decoding knobs like refusal thresholds or tool-use requirements.
+          </p>
+
+          <h3>Online adaptation</h3>
+
+          <p>
+            After each session, update beliefs with small steps and decay:
+          </p>
+
+          <ul>
+            <li>If the user accepts a well-supported correction:<br>
+            C<sub>i</sub> ← C<sub>i</sub> - δ<sub>C</sub>, R<sub>i</sub> ← R<sub>i</sub> + δ<sub>R</sub></li>
+            <li>If they reject with valid counter-evidence:<br>
+            C<sub>i</sub> ← C<sub>i</sub> + δ<sub>C</sub>, R<sub>i</sub> ← R<sub>i</sub> - δ<sub>R</sub></li>
+            <li>Time decay to avoid lock-in:<br>
+            C<sub>i</sub>(t) = C<sub>i</sub>(0)e<sup>-λt</sup>, R<sub>i</sub>(t) = R<sub>i</sub>(0)e<sup>-λt</sup></li>
+          </ul>
+
+          <p>
+            Clip updates, cap per-session drift, and reset stance when similarity is low.
+          </p>
+
+          <h3>Safety floors and session bounds:</h3>
+
+          <p>
+            Some domains always raise the floor: medicine, finance, legal. You can also bound session length in high-risk states and force external verification tools before continuing. These "floors" prevent the exact failure pattern highlighted in the NYT story.
+          </p>
+
+          <h3>A basic user flow:</h3>
+
+          <ul>
+            <li>Start everyone at sterile, no personalization.</li>
+            <li>Offer an opt-in diagnostic, 3–5 minutes, with oblique items across day-to-day domains. Use a graded-response model for confidence, and simple calibration items for realism.</li>
+            <li>Build a small belief graph, 30–100 seed nodes.</li>
+            <li>Route every prompt through the risk function and stance templates.</li>
+            <li>Improve the belief graph over time building upon conversations.</li>
+          </ul>
+
+          <p>
+            Maintaining privacy here is essential, encryption is key. We need to build evals for this adaptive behavior.
+          </p>
+
+          <h2>Final Thoughts</h2>
+
+          <p>
+            Three Mile Island froze US nuclear buildout for a generation. We cannot repeat that story with AI. If the only lesson we take from recent cases is "make everything sterile," we will lose the space where new ideas come from, and we will push users to unregulated alternatives. The better path is to treat the NYT case as a design input, rebuild the stance layer, and measure what we care about.
+          </p>
+
+          <p>
+            Creativity and safety are not opposites. They are routing problems. We need to use these insights to justify better stance control, not permeate sterility. Maybe we start sterile, measure confidence and realism, map prompts to beliefs, and adapt.
+          </p>
+
+          <p>
+            Maybe that keeps people out of spirals and keeps the door open for work that is actually new.
+          </p>
+        </div>
+      </div>
+    `
+  },
+  {
     id: "endurance-of-intelligence",
     title: "The Endurance of Intelligence: Thoughts on Infinity and Zero",
     description: "Reflections on the future of intelligence, AI scaling, and what happens as the cost of thinking approaches zero.",

@@ -341,6 +341,9 @@ export default function ArcPPFDashboard() {
           >
             📝 Writings
           </Link>
+          <div className="px-4 py-2 bg-orange-600 text-white font-bold border border-orange-400 rounded opacity-50">
+            🤖 AI Frontier
+          </div>
           <a
             href="https://www.krypte.ai"
             target="_blank"
@@ -362,6 +365,22 @@ export default function ArcPPFDashboard() {
             className="px-4 py-2 bg-red-600 text-white font-bold hover:bg-red-700 transition-colors border border-red-400 rounded"
           >
             📧 Email
+          </a>
+          <a
+            href="https://drive.google.com/file/d/1roTioVMkGKi3oM-4IJn8BsYVifJdzhPV/view?usp=sharing"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 bg-orange-600 text-white font-bold hover:bg-orange-700 transition-colors border border-orange-400 rounded"
+          >
+            📄 Resume
+          </a>
+          <a
+            href="https://github.com/mbansal2006"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 bg-gray-600 text-white font-bold hover:bg-gray-700 transition-colors border border-gray-400 rounded"
+          >
+            💻 GitHub
           </a>
         </div>
       </div>
