@@ -51,6 +51,7 @@ const Index = () => {
   const [playerScore, setPlayerScore] = useState(0);
   const [connectFourBotScore, setConnectFourBotScore] = useState(0);
   const [lastMove, setLastMove] = useState<{row: number, col: number} | null>(null);
+  const [learningRate, setLearningRate] = useState(0.1); // User-controlled learning rate
 
   // Connect Four bot state
   const [botBoard, setBotBoard] = useState<number[][]>([]);
@@ -209,20 +210,29 @@ const Index = () => {
     const history = gameHistoryRef.current;
     if (history.length === 0) return;
     
-    // Update weights for each move in the game
+    // Update weights for each move in the game using user-controlled learning rate
     for (let i = 0; i < history.length; i++) {
       const entry = history[i];
-      const nextState = i < history.length - 1 ? history[i + 1].state : null;
-      updateWeights(entry.state, entry.action, entry.reward, nextState);
+      const reward = entry.reward;
+      if (reward > 0) {
+        // Positive reward - increase weights based on learning rate
+        rlWeightsRef.current = rlWeightsRef.current.map(w => w + learningRate);
+      } else if (reward < 0) {
+        // Negative reward - decrease weights based on learning rate
+        rlWeightsRef.current = rlWeightsRef.current.map(w => w - learningRate);
+      }
     }
     
     // Clear game history
     gameHistoryRef.current = [];
     gamesPlayedRef.current += 1;
     
+    // Decay epsilon
+    epsilonRef.current = Math.max(0.05, epsilonRef.current * 0.999);
+    
     // Log learning progress
-    console.log(`Game ${gamesPlayedRef.current} completed. Epsilon: ${epsilonRef.current.toFixed(3)}`);
-  }, []);
+    console.log(`Game ${gamesPlayedRef.current} completed. Learning Rate: ${learningRate}, Epsilon: ${epsilonRef.current.toFixed(3)}`);
+  }, [learningRate]);
 
   const handlePlayerMove = useCallback((col: number) => {
     if (currentPlayer !== 'player' || connectFourGameOver) return;
@@ -1338,7 +1348,29 @@ const Index = () => {
                 <div>Player Score: {playerScore}</div>
                 <div>Bot Score: {connectFourBotScore}</div>
                 <div>Games Played: {gamesPlayedRef.current}</div>
-                <div>Learning Rate: {(1 - epsilonRef.current).toFixed(2)}</div>
+              </div>
+            </div>
+            
+            {/* Learning Rate Slider */}
+            <div className="mb-4 w-full max-w-md">
+              <label className="block text-yellow-300 text-sm font-bold mb-2">
+                Bot Learning Rate: {learningRate.toFixed(2)}
+              </label>
+              <input
+                type="range"
+                min="0.01"
+                max="0.5"
+                step="0.01"
+                value={learningRate}
+                onChange={(e) => setLearningRate(parseFloat(e.target.value))}
+                className="w-full h-2 bg-yellow-600 rounded-lg appearance-none cursor-pointer slider"
+                style={{
+                  background: `linear-gradient(to right, #fbbf24 0%, #fbbf24 ${(learningRate - 0.01) / 0.49 * 100}%, #374151 ${(learningRate - 0.01) / 0.49 * 100}%, #374151 100%)`
+                }}
+              />
+              <div className="flex justify-between text-xs text-yellow-400 mt-1">
+                <span>Slow (0.01)</span>
+                <span>Fast (0.5)</span>
               </div>
             </div>
             
@@ -1438,6 +1470,8 @@ const Index = () => {
       </div>
       </div>
     </div>
+    
+
   );
 };
 
