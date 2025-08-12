@@ -52,6 +52,7 @@ const Index = () => {
   const [connectFourBotScore, setConnectFourBotScore] = useState(0);
   const [lastMove, setLastMove] = useState<{row: number, col: number} | null>(null);
   const [learningRate, setLearningRate] = useState(0.1); // User-controlled learning rate
+  const [connectFourPlayed, setConnectFourPlayed] = useState(false); // Track if Connect Four has been played
 
   // Connect Four bot state
   const [botBoard, setBotBoard] = useState<number[][]>([]);
@@ -120,9 +121,9 @@ const Index = () => {
     { id: "krypte", name: "Krypte", type: "project", location: "AI Project", description: "AI without the trust burden", color: "#96CEB4", points: 25, impressiveness: 10, url: "https://www.krypte.ai"},
     { id: "assurenow", name: "AssureNow", type: "project", location: "Healthcare", description: "Medication adherence platform", color: "#96CEB4", points: 20, impressiveness: 8, url: "http://assurenow.co/" },
     { id: "drug-monitor", name: "Drug Monitor", type: "project", location: "Government", description: "Global FDA manufacturing dashboard", color: "#96CEB4", points: 22, impressiveness: 9, url: "https://github.com/mbansal2006/drug_monitor" },
-    { id: "regulations-scraper", name: "Regulations Scraper", type: "project", location: "Government", description: "Public comment analysis tool", color: "#96CEB4", points: 16, impressiveness: 6, url: "https://regulations-comment-scraper.streamlit.app/" },
+    { id: "regulations-scraper", name: "Regulations Comment Scraper", type: "project", location: "Government", description: "Public comment analysis tool", color: "#96CEB4", points: 16, impressiveness: 6, url: "https://regulations-comment-scraper.streamlit.app/" },
     { id: "treasury-tool", name: "Internal Treasury Tool", type: "project", location: "Government", description: "Contract vehicle tracking system", color: "#96CEB4", points: 20, impressiveness: 7, url: "https://home.treasury.gov/system/files/236/20241106-PCLIA-ServiceNow-508.pdf" },
-    { id: "health-economics", name: "Prior Authorization Research", type: "project", location: "Research", description: "The Retina Institute", color: "#96CEB4", points: 15, impressiveness: 7, url: "https://jamanetwork.com/journals/jamaophthalmology/fullarticle/2805678" },
+    { id: "health-economics", name: "Prior Authorization Research", type: "project", location: "Research", description: "Healthcare Economics Research", color: "#96CEB4", points: 15, impressiveness: 7, url: "https://jamanetwork.com/journals/jamaophthalmology/fullarticle/2805678" },
 
     // Achievements
     { id: "ai-frontier", name: "AI Frontier", type: "achievement", location: "Portfolio", description: "Interactive AI frontier visualization", color: "#FFEAA7", points: 30, impressiveness: 9},
@@ -249,6 +250,7 @@ const Index = () => {
         setConnectFourWinner('player');
         setConnectFourGameOver(true);
         setPlayerScore(prev => prev + 1);
+        setConnectFourPlayed(true);
         
         // Negative reward for bot loss
         gameHistoryRef.current.forEach(entry => {
@@ -260,6 +262,7 @@ const Index = () => {
       } else if (isBoardFull(newBoard)) {
         setConnectFourWinner('tie');
         setConnectFourGameOver(true);
+        setConnectFourPlayed(true);
         
         // Small positive reward for tie
         gameHistoryRef.current.forEach(entry => {
@@ -269,6 +272,7 @@ const Index = () => {
         // Learn from the game
         learnFromGame();
       } else {
+        console.log('Setting current player to bot');
         setCurrentPlayer('bot');
         // Bot move will be triggered by useEffect
       }
@@ -701,7 +705,9 @@ const Index = () => {
 
   // Connect Four bot move effect
   useEffect(() => {
+    console.log('Bot useEffect triggered:', { currentPlayer, connectFourGameStarted, connectFourGameOver });
     if (currentPlayer === 'bot' && connectFourGameStarted && !connectFourGameOver) {
+      console.log('Bot is thinking...');
       const timer = setTimeout(() => {
         const currentState = boardToString(connectFourBoard);
         const botMove = calculateBotMove(connectFourBoard);
@@ -726,6 +732,7 @@ const Index = () => {
             setConnectFourWinner('bot');
             setConnectFourGameOver(true);
             setConnectFourBotScore(prev => prev + 1);
+            setConnectFourPlayed(true);
             
             // Update rewards for bot win
             gameHistoryRef.current.forEach(entry => {
@@ -737,6 +744,7 @@ const Index = () => {
           } else if (isBoardFull(newBoard)) {
             setConnectFourWinner('tie');
             setConnectFourGameOver(true);
+            setConnectFourPlayed(true);
             
             // Small positive reward for tie
             gameHistoryRef.current.forEach(entry => {
@@ -753,7 +761,7 @@ const Index = () => {
       
       return () => clearTimeout(timer);
     }
-  }, [currentPlayer, connectFourGameStarted, connectFourGameOver, connectFourBoard, calculateBotMove, makeMove, checkWin, isBoardFull, boardToString]);
+  }, [currentPlayer, connectFourGameStarted, connectFourGameOver, connectFourBoard, calculateBotMove, makeMove, checkWin, isBoardFull, boardToString, learnFromGame]);
 
 
 
@@ -902,6 +910,8 @@ const Index = () => {
       const initialBoard = Array(CONNECT_FOUR_ROWS).fill(null).map(() => Array(CONNECT_FOUR_COLS).fill(0));
       setConnectFourBoard(initialBoard);
       setBotBoard(initialBoard);
+      // Start the game automatically
+      setConnectFourGameStarted(true);
     }
   }, [connectFourBoard.length]);
 
@@ -1066,6 +1076,53 @@ const Index = () => {
         </div>
       )}
 
+      {/* Connect Four Game Result Alert */}
+      {connectFourGameOver && connectFourWinner && (
+        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-900 border-2 border-yellow-400 text-yellow-300 px-8 py-6 rounded-lg shadow-lg z-50">
+          <div className="text-center">
+            <div className="text-3xl mb-4">
+              {connectFourWinner === 'player' ? '🎉' : connectFourWinner === 'bot' ? '🤖' : '🤝'}
+            </div>
+            <div className="text-2xl font-bold mb-4">
+              {connectFourWinner === 'player' ? 'YOU WIN!' : 
+               connectFourWinner === 'bot' ? 'BOT WINS!' : 
+               "IT'S A TIE!"}
+            </div>
+            <div className="text-lg space-y-2">
+              <div>Player Score: {playerScore}</div>
+              <div>Bot Score: {connectFourBotScore}</div>
+              <div>Games Played: {gamesPlayedRef.current}</div>
+            </div>
+            <div className="mt-4 text-sm text-yellow-400">
+              Projects are now unlocked! Scroll down to see them.
+            </div>
+            
+            <div className="mt-6 space-x-4">
+              <button
+                onClick={() => {
+                  setConnectFourGameOver(false);
+                  setConnectFourWinner(null);
+                  startConnectFourGame();
+                }}
+                className="px-6 py-3 bg-yellow-600 text-black font-bold border border-yellow-400 hover:bg-yellow-700 transition-colors"
+              >
+                PLAY AGAIN
+              </button>
+              <button
+                onClick={() => {
+                  setConnectFourGameOver(false);
+                  setConnectFourWinner(null);
+                  resetConnectFourGame();
+                }}
+                className="px-6 py-3 bg-red-600 text-white font-bold border border-red-400 hover:bg-red-700 transition-colors"
+              >
+                MAIN MENU
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-1 flex-col relative">
         {/* Centered Intro Message */}
         <div className="text-center p-6 lg:p-8">
@@ -1073,19 +1130,11 @@ const Index = () => {
                 <h2 className="text-xl lg:text-2xl font-bold mb-3 lg:mb-4 text-yellow-300">Hey! I'm Mahir 👋</h2>
                 <div className="text-yellow-200 space-y-2 lg:space-y-3 text-xs lg:text-sm leading-relaxed">
                   <p>
-                    I'm a math and computer science student at WashU, and I spend most of my time thinking about where we're headed. 
-                    For me that means asking about what future we want and how do we get there with what's in our toolbox.
+                    I'm a math and computer science student at WashU.
+                    I spend most of my time thinking about where we’re headed and how we get there with what’s in our toolbox.
                   </p>
                   <p>
-                    Over the past few years, I've been bouncing between internships and projects trying to learn more about each of these tools 
-                    (tech, government, and markets). I've found that I'm most excited by applying those tools in high-stakes problems like health or development.
-                  </p>
-                  <p>
-                    Right now, I'm building <a href="https://www.krypte.ai" target="_blank" rel="noopener noreferrer" className="text-yellow-400 hover:text-yellow-300 underline">Krypte</a> - 
-                    trying to build AI systems that protect your privacy.
-                  </p>
-                  <p>
-                    Wild ride so far, and hopefully just getting started. Love to chat.
+                    Love to chat.
                   </p>
             </div>
                 </div>
@@ -1321,14 +1370,6 @@ const Index = () => {
               <p>Beat an epsilon-greedy Q-learning bot</p>
               <p>Click on a column to drop your piece</p>
             </div>
-            {!connectFourGameStarted && (
-                <button
-                onClick={startConnectFourGame}
-                className="px-6 lg:px-8 py-3 lg:py-4 bg-yellow-600 text-black font-bold border-2 border-yellow-400 hover:bg-yellow-700 transition-colors text-sm lg:text-base"
-                >
-                PLAY GAME
-                </button>
-            )}
               </div>
               
           {/* Game Board */}
@@ -1336,18 +1377,13 @@ const Index = () => {
             {/* Game Status */}
             <div className="text-center mb-4">
               <div className="text-lg font-bold text-yellow-300 mb-2">
-                {connectFourGameOver ? (
-                  connectFourWinner === 'player' ? '🎉 YOU WIN! 🎉' :
-                  connectFourWinner === 'bot' ? '🤖 BOT WINS! 🤖' :
-                  "🤝 IT'S A TIE! 🤝"
-                ) : (
-                  `Current Player: ${currentPlayer === 'player' ? '🔴 You' : '🔵 Bot'}`
-                )}
+                {!connectFourGameOver && `Current Player: ${currentPlayer === 'player' ? '🔴 You' : '🔵 Bot'}`}
               </div>
               <div className="text-sm text-yellow-300 space-y-1">
                 <div>Player Score: {playerScore}</div>
                 <div>Bot Score: {connectFourBotScore}</div>
                 <div>Games Played: {gamesPlayedRef.current}</div>
+                <div>Exploration Rate: {epsilonRef.current.toFixed(2)}</div>
               </div>
             </div>
             
@@ -1425,40 +1461,38 @@ const Index = () => {
 
         </div>
 
-        {/* Border */}
-
         {/* Projects Section */}
-        <div className="p-4 lg:p-8">
-          
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-                  {experiences
-              .filter(exp => exp.type === 'project')
-                    .sort((a, b) => b.impressiveness - a.impressiveness)
-              .map((project) => (
-                      <div 
-                        key={project.id}
-                  className="bg-yellow-900 border border-yellow-600 rounded-lg p-4 hover:border-yellow-400 transition-colors"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-yellow-200 font-bold text-base">{project.name}</h3>
-                    <span className="text-yellow-400 text-sm">{project.location}</span>
-                          </div>
-                  <p className="text-yellow-300 text-sm mb-3">{project.description}</p>
-                          {project.url && (
-                            <a
-                              href={project.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                      className="inline-block w-full text-center px-3 py-2 bg-yellow-600 text-black text-sm font-bold hover:bg-yellow-700 transition-colors border border-yellow-400 rounded"
-                            >
-                              View Project →
-                            </a>
-                          )}
-                      </div>
-                    ))}
-        </div>
-      </div>
+        {connectFourPlayed && (
+          <div className="pt-0 p-4 lg:p-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+              {experiences
+                .filter(exp => exp.type === 'project')
+                .sort((a, b) => b.impressiveness - a.impressiveness)
+                .map((project) => (
+                  <div 
+                    key={project.id}
+                    className="bg-yellow-900 border border-yellow-600 rounded-lg p-4 hover:border-yellow-400 transition-colors"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-yellow-200 font-bold text-base">{project.name}</h3>
+                      <span className="text-yellow-400 text-sm">{project.location}</span>
+                    </div>
+                    <p className="text-yellow-300 text-sm mb-3">{project.description}</p>
+                    {project.url && (
+                      <a
+                        href={project.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block w-full text-center px-3 py-2 bg-yellow-600 text-black text-sm font-bold hover:bg-yellow-700 transition-colors border border-yellow-400 rounded"
+                      >
+                        View Project →
+                      </a>
+                    )}
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
 
         {/* Border */}
         <div className="border-t-2 border-yellow-400 mx-4 lg:mx-8"></div>
