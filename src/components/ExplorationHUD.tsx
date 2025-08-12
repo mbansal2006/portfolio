@@ -1,5 +1,5 @@
 import React from 'react';
-import { Eye, Lock, Unlock } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useExploration } from '@/contexts/ExplorationContext';
@@ -20,11 +20,9 @@ export const ExplorationHUD: React.FC = () => {
                 <span className="text-sm font-mono text-yellow-400">Exploration</span>
               </div>
               <div className="flex items-center gap-1">
-                {isInfinityRoomUnlocked ? (
-                  <Unlock className="w-4 h-4 text-green-400" />
-                ) : (
-                  <Lock className="w-4 h-4 text-gray-400" />
-                )}
+                <span className={`text-xs font-mono ${isInfinityRoomUnlocked ? 'text-green-400' : 'text-gray-400'}`}>
+                  {isInfinityRoomUnlocked ? 'Infinity Room Unlocked' : 'Infinity Room Locked'}
+                </span>
               </div>
             </div>
             
