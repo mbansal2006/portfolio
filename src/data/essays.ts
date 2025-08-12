@@ -5,7 +5,7 @@ export const essays: Essay[] = [
     id: "sycophancy-to-sterility",
     title: "Adaptive Sycophancy",
     description: "An exploration of AI's pendulum swing between being overly agreeable and emotionally distant, and the need for adaptive guardrails that balance creativity with safety.",
-    excerpt: "The New York Times ran a detailed investigation into a 'delusional spiral' triggered over a 21-day chat with a mainstream AI assistant. The transcript shows a pattern many of us have seen: flattery, agreement, narrative escalation, and a model that keeps 'yes and' ing instead of reality-checking.",
+    excerpt: "This is exactly what humans do. We don't speak to everyone in the same way, with the same level of agreement or pushback, on every topic. We adapt. More cautious with a friend in crisis, more challenging with a colleague in a debate, more exploratory with someone we trust to think out loud. We adapt based on the subject, the stakes, and what we know about the other person's knowledge and temperament. If we expect AI to be a genuine companion, it needs to be able to do the same.",
     downloadLink: "https://drive.google.com/file/d/1iXWV-9emateiOBNc5iMy9ohjnSXQ6R14/view?usp=sharing",
     content: `
       <div class="max-w-4xl mx-auto px-4 py-8">
