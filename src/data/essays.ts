@@ -2,6 +2,97 @@ import { Essay } from "@/components/EssayCard";
 
 export const essays: Essay[] = [
   {
+    id: "can-the-town-square-be-rebuilt",
+    title: "Can the Town Square Be Rebuilt?",
+    description: "Reflecting on the erosion of open discourse on college campuses and asking whether they can once again serve as the town square in the marketplace of ideas.",
+    excerpt: "This tragedy was an invasion of the marketplace of ideas. From where I sit as a freshman in that town square, I fear it's more than one act of violence. It may be proof the system itself is broken.",
+    downloadLink: "https://drive.google.com/file/d/1jU3AyPAgu0Y_auXUtbyEixynkyEjhxH1/view?usp=sharing",
+    content: `
+      <div class="max-w-4xl mx-auto px-4 py-8">
+
+        <div class="prose max-w-none">
+          <p>Last week, I flew back to St. Louis from Los Angeles with a dead phone and no charger. My first stop after getting back to St. Louis was to meet with friends to start and finish a math problem set due at 11:59pm that night.</p>
+
+          <p>Upon meeting my friends, my phone still dead, I got the news that Charlie Kirk had been assassinated. I'm no stranger to death or grief, but this was disorienting in a way I wasn't used to.</p>
+
+          <p>I had just come back from LA after spending a week organizing and attending the All-In Summit, an annual conference on technology, government, and markets. Not everyone at the summit, by any means, was on one side of the political spectrum. But everyone I met shared one trait, they believed in marketplaces. That extends from frontier technologies to ideas.</p>
+
+          <p>Coming back to school, I was met with a very different outlook. I heard someone in my class describe his death as "ironic" and even an Instagram story come out with "I'll save my mourning for the children who didn't have a say in the violence. Not a man who profited from inciting it."</p>
+
+          <p>David Sacks called this tragedy an invasion of the marketplace of ideas. From where I sit as a freshman in that town square, I fear it's more than one act of violence. It may be proof the system itself is broken.</p>
+
+          <p>The questions I'm trying to work through then are:</p>
+          <p>1) What broke it? Not just what accelerated it, but what lit the fire?</p>
+          <p>2) Is it reversible? Can the system be fixed, that is can the university come back to being that town square of the marketplace of ideas?</p>
+
+          <h2>What broke it?</h2>
+
+          <p>That math group I was racing to get back to St. Louis for isn't that unlike the summit. It's a small, tight-knit cohort taking a year-long course meeting every day to practice proof-based mathematics.</p>
+
+          <p>Proof-based math provides a great framework for thinking of free speech and the marketplace of ideas. In math, discourse requires rigor, not force. If you think a statement is untrue, you have to provide a counterexample or prove it's logically invalid. It's a culture that says "destroy the argument," the person making it is irrelevant.</p>
+
+          <p>Discourse in math lends itself to this rigor because it's essential in coming to the correct solution. In logic, there's no room for error. There is a constant need to find the strongest arguments.</p>
+
+          <p>Last week was a tragic reminder that our political discourse lacks that rigorous culture. We've moved away from that rigor I associate with math.</p>
+
+          <p>This is way bigger than political violence, though that's the most tragic and obvious. Across the board, we've normalized discourse-killers (ad hominems, echo chambers, and equating words with violence).</p>
+
+          <p>College campuses, again the proposed town squares of this marketplace of ideas, have become breeding grounds for these discourse-killers. Ask anyone on the Debate Team, and there's a good chance they can tell you about some story where someone made a real argument that their opponent's use of a term like "disabled people" over "people with disabilities" meant they should lose the round to create better norms in the community. The saddest part is it's likely they had an argument prepared for either side.</p>
+
+          <p>When I was in LA, I listened to a panel featuring the chancellors of UC Berkeley and Dartmouth at the summit. This was the day before the assassination, but a lot of the conversation echoed this problem. They talked about the value of protest but danger in "stopping speech" and the need to move towards "institutional neutrality". I'm reminded of something Chancellor Lyons of UC Berkeley said that day:</p>
+
+          <blockquote>
+            "The John Stuart Mill marketplace for ideas — we're trying to keep it as open as we can. But I worry about the idea that there are acceptable questions and unacceptable questions. That's a bad problem."
+          </blockquote>
+
+          <p></p>
+
+          <p>There's lots of ideas out there for why we're having this problem, why there are unacceptable questions. Recently, I've heard everything from SSRIs to social media algorithms to violent video games. Those are all essentially ideas about kindling for the fire, but I don't think you can reasonably believe it's the source. What lit the spark?</p>
+
+          <p>I'm not some expert on politics or psychology, but I am here in the town square thinking through what seems to be a problem of my generation. I think to answer it you have to go back around twenty years.</p>
+
+          <p>I was born in 2006. Like many, I loved dreaming about the future. We grew up with Meet the Robinsons, WALL-E, Cloudy with a Chance of Meatballs, Buzz Lightyear, and Tommorrowland. But for a while that's all the future was, some dream. I never thought anything exciting would happen until maybe 3000, definitely not in my lifetime. It didn't feel like a good time to dream.</p>
+
+          <p>That started to change around 2018, we saw a livestream of a Tesla Roadster with a mannequin go to space during science class. The next couple years, I was lucky to come across a white-paper on ERC-20 tokens and get access to an LLM beta. For the first time ever, it started to feel like a good time to dream about the future. It was exciting. (I'm grateful to have had the privilege of being in that right place at the right time. I don't think enough of generation had that.)</p>
+
+          <p>Basically, we grew up around the peak of stagnation. We missed Apollo and the Dot Com boom. Our next best thing was Uber, Netflix, or another iPhone with a bigger screen.</p>
+
+          <p>I don't say this to whine. If you believe that behaviors are borne out of incentives and things take the path of least resistance, then this shaped those incentives for us. We weren't incentivized to reach the best ideas.</p>
+
+          <p>I think that led to lazier discourse. A lot of us still learned rigorous discourse in the academic sense (e.g., formal logic or philosophical syllogisms). We even valued that kind of rigor outside the classroom like in athletics, or in the strategies we used to play video games. But most of us didn't feel like the stakes were high enough to model that rigor in political discourse which essentially boils down to discussing competing visions for the future.</p>
+
+          <p>We didn't grow up thinking we were going to play a big role in building the future, so we got lazy when talking about it. We defaulted to what was popular in our groups or the ones we wanted to be a part of. We believed things even if we didn't know why. Those beliefs were often more like membership cards than visions of the future we cared about. Those membership cards often come in bundles and the more you hold the more "in" you are. The more "woke" or "based". The more "aligned".</p>
+
+          <p>We got perfect tools to do that, by the way. The printing press ushered in a race to the quickest response. Oversimplifications that were just long enough to sell an idea but not to share a syllogism.</p>
+
+          <p>Now, almost five centuries later, we scroll endlessly through short-form content giving the illusion that we're building an informed opinion. But part of us also knows that it's a product of an algorithm that's built to feed you more of what you already agree with. Not to mention the mix of sponsored content, AI-generated slop, and censorship.</p>
+
+          <p>The previous generation also gave us the perfect incentives to keep playing along. There was a record of what we said, "followed", "liked" and when we did it. And somehow we all ended up agreeing that there was no abstaining. That in every issue, silence was a statement. And the only way to make a statement was to scroll. But that was all the kindling, not the spark.</p>
+
+          <h2>Is it reversible?</h2>
+
+          <p>I think it's beginning to become obvious that we're living in important times. The stakes are higher now than they've been for a really long time, maybe ever for all we know. We're faced with existential risks from moving too slowly to moving too quickly. And what should have been a wake-up call to those risks became a year-long quarantine to dig ourselves into algorithmic echo chambers.</p>
+
+          <p>Not to mention underneath all of this, is a race against geopolitical rivals to have a say in what the future will look like. At any rate, it is essential that we find the best ideas. We have to fix the marketplace and figure out the town square.</p>
+
+          <p>People debate about what the point of college is. Some view it as an investment. Some as a consumption good like an all-inclusive resort, maybe even a positional good (like a status symbol). For many, it's more of an insurance product, something to fall back on amid uncertainty. Irrespective of how you view college, all of these at some level demand that the campus remains the town square.</p>
+
+          <p>That universities can do their jobs as market-makers in this marketplace of ideas. Are the events of the last week grounds for immediate dismissal, a clear sign that the bubble has popped? Or, can universities get it together? Can they take initiative, learn from their mistakes and do their job?</p>
+
+          <p>I don't think anyone is in a position to say. I hope the answer is that they can. I think they need to, the infrastructure of higher education is hard to rebuild at scale. My hope is that competition forces universities to take that initiative. That can happen both through direct competitors like other schools doing a better job of keeping the marketplace open and through indirect competitors giving students options outside college to force all universities to do better.</p>
+
+          <p>My optimism here is probably a little illogical, but I believe things will trend this way. The high stakes nature of the problems we need to solve will demand competition to demand universities to open up the marketplace of ideas. My hope is that the process doesn't take more time than we have and my fear is that we don't have much time.</p>
+
+          <h2>Final Thoughts</h2>
+
+          <p>I'm not a big fan of remembering the dead in any particular way. I care a lot more about remembering what they stood for. I didn't agree with Charlie Kirk on everything. Probably not on most things. But I think what he stood for more than his politics or patriotism, was a belief in this type of discourse. Finding the best ideas through rigorous dialogue often with people you disagree with.</p>
+
+          <p>I believe that belief is the bedrock of democracy and the future I want to live in. I think it's why universities exist and I hope that it's why they'll still exist, to promote a culture of rigor, not force.</p>
+        </div>
+      </div>
+    `
+  },
+  {
     id: "markets-and-bubbles",
     title: "What Survives the Bubble?",
     description: "An exploration of how bubbles force economic accounting, revealing where margin actually lands in complex value chains from AI to materials.",
