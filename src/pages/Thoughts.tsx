@@ -64,9 +64,14 @@ const Thoughts = () => {
           >
             🏠 Home
           </Link>
-          <div className="px-4 py-2 bg-yellow-600 text-white font-bold border border-yellow-400 rounded opacity-50">
+          <a
+            href="https://mahirbansal.substack.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 bg-yellow-600 text-white font-bold hover:bg-yellow-700 transition-colors border border-yellow-400 rounded"
+          >
             📝 Writings
-          </div>
+          </a>
           <Link
             to="/frontier"
             className="px-4 py-2 bg-orange-600 text-white font-bold hover:bg-orange-700 transition-colors border border-orange-400 rounded"

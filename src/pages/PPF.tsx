@@ -336,12 +336,14 @@ export default function ArcPPFDashboard() {
           >
             🏠 Home
           </Link>
-          <Link
-            to="/thoughts"
+          <a
+            href="https://mahirbansal.substack.com"
+            target="_blank"
+            rel="noopener noreferrer"
             className="px-4 py-2 bg-yellow-600 text-white font-bold hover:bg-yellow-700 transition-colors border border-yellow-400 rounded"
           >
             📝 Writings
-          </Link>
+          </a>
           <div className="px-4 py-2 bg-orange-600 text-white font-bold border border-orange-400 rounded opacity-50">
             🤖 AI Frontier
           </div>

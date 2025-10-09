@@ -958,12 +958,14 @@ const Index = () => {
             <div className="px-2 py-1 bg-black text-white text-xs font-bold border border-yellow-400 rounded text-center opacity-50">
               🏠 Home
             </div>
-            <Link
-              to="/thoughts"
+            <a
+              href="https://mahirbansal.substack.com"
+              target="_blank"
+              rel="noopener noreferrer"
               className="px-2 py-1 bg-yellow-600 text-white text-xs font-bold hover:bg-yellow-700 transition-colors border border-yellow-400 rounded text-center"
             >
               📝 Writings
-            </Link>
+            </a>
             <Link
               to="/frontier"
               className="px-2 py-1 bg-orange-600 text-white text-xs font-bold hover:bg-orange-700 transition-colors border border-orange-400 rounded text-center"
@@ -1026,12 +1028,14 @@ const Index = () => {
             <div className="px-4 py-2 bg-black text-white font-bold border border-yellow-400 rounded opacity-50">
               🏠 Home
             </div>
-            <Link
-              to="/thoughts"
+            <a
+              href="https://mahirbansal.substack.com"
+              target="_blank"
+              rel="noopener noreferrer"
               className="px-4 py-2 bg-yellow-600 text-white font-bold hover:bg-yellow-700 transition-colors border border-yellow-400 rounded"
             >
               📝 Writings
-            </Link>
+            </a>
             <Link
               to="/frontier"
               className="px-4 py-2 bg-orange-600 text-white font-bold hover:bg-orange-700 transition-colors border border-orange-400 rounded"
