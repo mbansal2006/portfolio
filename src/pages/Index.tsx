@@ -995,14 +995,6 @@ const Index = () => {
               📧 Email
             </button>
             <a
-              href="https://drive.google.com/file/d/1roTioVMkGKi3oM-4IJn8BsYVifJdzhPV/view?usp=sharing"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-2 py-1 bg-orange-600 text-white text-xs font-bold hover:bg-orange-700 transition-colors border border-orange-400 rounded text-center"
-            >
-              📄 Resume
-            </a>
-            <a
               href="https://github.com/mbansal2006"
               target="_blank"
               rel="noopener noreferrer"
@@ -1064,14 +1056,6 @@ const Index = () => {
             >
               📧 Email
             </button>
-            <a
-              href="https://drive.google.com/file/d/1roTioVMkGKi3oM-4IJn8BsYVifJdzhPV/view?usp=sharing"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-4 py-2 bg-orange-600 text-white font-bold hover:bg-orange-700 transition-colors border border-orange-400 rounded"
-            >
-              📄 Resume
-            </a>
             <a
               href="https://github.com/mbansal2006"
               target="_blank"
