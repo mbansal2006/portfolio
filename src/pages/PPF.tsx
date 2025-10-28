@@ -348,14 +348,6 @@ export default function ArcPPFDashboard() {
             🤖 AI Frontier
           </div>
           <a
-            href="https://www.krypte.ai"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-4 py-2 bg-purple-600 text-white font-bold hover:bg-purple-700 transition-colors border border-purple-400 rounded"
-          >
-            🛡️ Krypte
-          </a>
-          <a
             href="https://www.linkedin.com/in/mahirbansal/"
             target="_blank"
             rel="noopener noreferrer"

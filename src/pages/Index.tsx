@@ -122,7 +122,6 @@ const Index = () => {
     { id: "shimla", name: "Shimla, HP", type: "location", location: "India", description: "City in Himachal Pradesh, India", color: "#45B7D1", points: 6, impressiveness: 4, year: "2015" },
 
     // Projects
-    { id: "krypte", name: "Krypte", type: "project", location: "AI Project", description: "AI without the trust burden", color: "#96CEB4", points: 25, impressiveness: 10, url: "https://www.krypte.ai"},
     { id: "assurenow", name: "AssureNow", type: "project", location: "Healthcare", description: "Medication adherence platform", color: "#96CEB4", points: 20, impressiveness: 8, url: "http://assurenow.co/" },
     { id: "drug-monitor", name: "Drug Monitor", type: "project", location: "Government", description: "Global FDA manufacturing dashboard", color: "#96CEB4", points: 22, impressiveness: 9, url: "https://github.com/mbansal2006/drug_monitor" },
     { id: "regulations-scraper", name: "Regulations Comment Scraper", type: "project", location: "Government", description: "Public comment analysis tool", color: "#96CEB4", points: 16, impressiveness: 6, url: "https://regulations-comment-scraper.streamlit.app/" },
@@ -973,14 +972,6 @@ const Index = () => {
               🤖 AI
             </Link>
             <a
-              href="https://www.krypte.ai"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-2 py-1 bg-purple-600 text-white text-xs font-bold hover:bg-purple-700 transition-colors border border-purple-400 rounded text-center"
-            >
-              🛡️ Krypte
-            </a>
-            <a
               href="https://www.linkedin.com/in/mahirbansal/"
               target="_blank"
               rel="noopener noreferrer"
@@ -1034,14 +1025,6 @@ const Index = () => {
             >
               🤖 AI Frontier
             </Link>
-            <a
-              href="https://www.krypte.ai"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-4 py-2 bg-purple-600 text-white font-bold hover:bg-purple-700 transition-colors border border-purple-400 rounded"
-            >
-              🛡️ Krypte
-            </a>
             <a
               href="https://www.linkedin.com/in/mahirbansal/"
               target="_blank"
