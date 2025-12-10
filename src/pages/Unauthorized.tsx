@@ -25,7 +25,22 @@ const Unauthorized = () => {
     };
 
     const phoneStr = '571-751-0100';
-    let offsetX = centerX - (phoneStr.length * 6) / 2;
+
+    // Calculate spacing based on screen width - tighter spacing on mobile
+    const charWidth = 5; // Width of each character
+    const baseSpacing = 1; // Base spacing between characters
+    const totalWidth = phoneStr.length * (charWidth + baseSpacing);
+
+    // Adjust spacing if phone number doesn't fit
+    let spacing = baseSpacing;
+    if (totalWidth > cols - 4) {
+      // Reduce spacing for narrow screens
+      spacing = Math.max(0, Math.floor((cols - 4 - phoneStr.length * charWidth) / phoneStr.length));
+    }
+
+    // Calculate starting position to ensure the entire number is visible
+    const actualTotalWidth = phoneStr.length * charWidth + (phoneStr.length - 1) * spacing;
+    let offsetX = Math.max(2, centerX - Math.floor(actualTotalWidth / 2));
     const offsetY = centerY - 3;
 
     for (let i = 0; i < phoneStr.length; i++) {
@@ -38,12 +53,15 @@ const Unauthorized = () => {
             if (pattern[y][x] === 1) {
               const px = Math.floor(offsetX + x);
               const py = Math.floor(offsetY + y);
-              phoneSet.add(`${px},${py}`);
+              // Only add pixel if it's within bounds
+              if (px >= 0 && px < cols && py >= 0 && py < rows) {
+                phoneSet.add(`${px},${py}`);
+              }
             }
           }
         }
       }
-      offsetX += 6;
+      offsetX += charWidth + spacing;
     }
 
     return phoneSet;
