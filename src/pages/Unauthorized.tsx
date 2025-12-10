@@ -6,8 +6,13 @@ const Unauthorized = () => {
   const [hasStarted, setHasStarted] = useState(false);
   const [clickCount, setClickCount] = useState(0);
   const pixelSize = 8; // Larger pixels for more visible decay
-  const gridRef = useRef<boolean[][]>([]);
+  const gridRef = useRef<string[][]>([]); // Store colors: 'black', 'red', 'blue', 'yellow'
   const phonePixelsRef = useRef<Set<string>>(new Set());
+
+  const getRandomColor = () => {
+    const colors = ['#ff0000', '#0000ff', '#ffff00']; // red, blue, yellow
+    return colors[Math.floor(Math.random() * colors.length)];
+  };
 
   // Define phone number pixels (571-751-0100)
   const definePhoneNumber = (cols: number, rows: number) => {
@@ -81,22 +86,23 @@ const Unauthorized = () => {
     const cols = Math.floor(canvas.width / pixelSize);
     const rows = Math.floor(canvas.height / pixelSize);
 
-    // Initialize grid (all white)
-    gridRef.current = Array(rows).fill(null).map(() => Array(cols).fill(true));
+    // Initialize grid (all black)
+    gridRef.current = Array(rows).fill(null).map(() => Array(cols).fill('black'));
 
     // Define phone number pixels
     phonePixelsRef.current = definePhoneNumber(cols, rows);
 
-    // Draw initial white canvas with one black pixel
-    ctx.fillStyle = '#ffffff';
+    // Draw initial black canvas
+    ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw one black pixel in the center
-    const blackPixelX = Math.floor(cols / 2);
-    const blackPixelY = Math.floor(rows / 2) - 10;
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(blackPixelX * pixelSize, blackPixelY * pixelSize, pixelSize, pixelSize);
-    gridRef.current[blackPixelY][blackPixelX] = false;
+    // Draw one random colored pixel in the center
+    const coloredPixelX = Math.floor(cols / 2);
+    const coloredPixelY = Math.floor(rows / 2) - 10;
+    const initialColor = getRandomColor();
+    ctx.fillStyle = initialColor;
+    ctx.fillRect(coloredPixelX * pixelSize, coloredPixelY * pixelSize, pixelSize, pixelSize);
+    gridRef.current[coloredPixelY][coloredPixelX] = initialColor;
   };
 
   useEffect(() => {
@@ -121,8 +127,8 @@ const Unauthorized = () => {
     const cols = Math.floor(canvas.width / pixelSize);
     const rows = Math.floor(canvas.height / pixelSize);
 
-    // First click on the black pixel - open Substack
-    if (!hasStarted && !gridRef.current[y]?.[x]) {
+    // First click on the colored pixel - open Substack
+    if (!hasStarted && gridRef.current[y]?.[x] !== 'black') {
       window.open('https://mahirbansal.substack.com', '_blank');
       setHasStarted(true);
       return;
@@ -146,26 +152,27 @@ const Unauthorized = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Get all white pixels that are NOT part of the phone number
+    // Get all black pixels that are NOT part of the phone number
     const availablePixels: [number, number][] = [];
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
-        if (gridRef.current[row][col] && !phonePixelsRef.current.has(`${col},${row}`)) {
+        if (gridRef.current[row][col] === 'black' && !phonePixelsRef.current.has(`${col},${row}`)) {
           availablePixels.push([col, row]);
         }
       }
     }
 
-    // Randomly select pixels to turn black
+    // Randomly select pixels to turn colored
     const shuffled = availablePixels.sort(() => Math.random() - 0.5);
     const toRemove = shuffled.slice(0, Math.min(pixelsToRemove, shuffled.length));
 
-    // Animate pixels turning black with staggered delay
-    ctx.fillStyle = '#000000';
+    // Animate pixels turning colored with staggered delay
     toRemove.forEach(([col, row], index) => {
       setTimeout(() => {
+        const color = getRandomColor();
+        ctx.fillStyle = color;
         ctx.fillRect(col * pixelSize, row * pixelSize, pixelSize, pixelSize);
-        gridRef.current[row][col] = false;
+        gridRef.current[row][col] = color;
       }, index * 5); // 5ms delay between each pixel for visible cascade effect
     });
 
