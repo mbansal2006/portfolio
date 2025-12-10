@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ExplorationProvider } from "@/contexts/ExplorationContext";
+import Unauthorized from "./pages/Unauthorized";
 import Index from "./pages/Index";
 import Thoughts from "./pages/Thoughts";
 import PPF from "./pages/PPF";
@@ -20,7 +21,8 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<Unauthorized />} />
+            <Route path="/old" element={<Index />} />
             <Route path="/thoughts" element={<Thoughts />} />
             <Route path="/frontier" element={<PPF />} />
             <Route path="/infinity" element={<InfinityRoom />} />
