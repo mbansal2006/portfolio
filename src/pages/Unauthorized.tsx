@@ -5,9 +5,19 @@ const Unauthorized = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hasStarted, setHasStarted] = useState(false);
   const [clickCount, setClickCount] = useState(0);
+  const [phase, setPhase] = useState<'reveal' | 'clear' | 'bounce'>('reveal'); // Track which phase we're in
   const pixelSize = 8; // Larger pixels for more visible decay
   const gridRef = useRef<string[][]>([]); // Store colors: 'black', 'red', 'blue', 'green'
   const phonePixelsRef = useRef<Set<string>>(new Set());
+  const bounceRef = useRef<{
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    width: number;
+    height: number;
+  } | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
 
   const getRandomColor = () => {
     const colors = ['#ff0000', '#0000ff', '#00ff00']; // red, blue, green
@@ -105,6 +115,76 @@ const Unauthorized = () => {
     gridRef.current[coloredPixelY][coloredPixelX] = initialColor;
   };
 
+  // Bouncing "da fuq" animation
+  useEffect(() => {
+    if (phase !== 'bounce') {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+      return;
+    }
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Initialize bounce position and velocity
+    if (!bounceRef.current) {
+      const textWidth = 120;
+      const textHeight = 40;
+      bounceRef.current = {
+        x: Math.random() * (canvas.width - textWidth),
+        y: Math.random() * (canvas.height - textHeight),
+        vx: 2 + Math.random() * 2, // Random speed between 2-4
+        vy: 2 + Math.random() * 2,
+        width: textWidth,
+        height: textHeight
+      };
+    }
+
+    const animate = () => {
+      if (!canvas || !ctx || !bounceRef.current) return;
+
+      // Clear canvas
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const bounce = bounceRef.current;
+
+      // Update position
+      bounce.x += bounce.vx;
+      bounce.y += bounce.vy;
+
+      // Bounce off edges
+      if (bounce.x <= 0 || bounce.x + bounce.width >= canvas.width) {
+        bounce.vx *= -1;
+        bounce.x = Math.max(0, Math.min(bounce.x, canvas.width - bounce.width));
+      }
+      if (bounce.y <= 0 || bounce.y + bounce.height >= canvas.height) {
+        bounce.vy *= -1;
+        bounce.y = Math.max(0, Math.min(bounce.y, canvas.height - bounce.height));
+      }
+
+      // Draw "da fuq" text
+      ctx.font = 'bold 32px monospace';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText('da fuq', bounce.x, bounce.y + 30);
+
+      animationFrameRef.current = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [phase]);
+
   useEffect(() => {
     initCanvas();
 
@@ -148,35 +228,76 @@ const Unauthorized = () => {
       return b;
     };
 
-    const pixelsToRemove = getFibonacci(clickCount);
+    const pixelsToChange = getFibonacci(clickCount);
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Get all black pixels that are NOT part of the phone number
-    const availablePixels: [number, number][] = [];
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < cols; col++) {
-        if (gridRef.current[row][col] === 'black' && !phonePixelsRef.current.has(`${col},${row}`)) {
-          availablePixels.push([col, row]);
+    if (phase === 'reveal') {
+      // REVEAL PHASE: Turn black pixels (except phone number) to color
+      const availablePixels: [number, number][] = [];
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+          if (gridRef.current[row][col] === 'black' && !phonePixelsRef.current.has(`${col},${row}`)) {
+            availablePixels.push([col, row]);
+          }
         }
       }
+
+      if (availablePixels.length === 0) {
+        // All non-phone pixels are colored, switch to clear phase
+        setPhase('clear');
+        setClickCount(0);
+        return;
+      }
+
+      // Randomly select pixels to turn colored
+      const shuffled = availablePixels.sort(() => Math.random() - 0.5);
+      const toColor = shuffled.slice(0, Math.min(pixelsToChange, shuffled.length));
+
+      // Animate pixels turning colored with staggered delay
+      toColor.forEach(([col, row], index) => {
+        setTimeout(() => {
+          const color = getRandomColor();
+          ctx.fillStyle = color;
+          ctx.fillRect(col * pixelSize, row * pixelSize, pixelSize, pixelSize);
+          gridRef.current[row][col] = color;
+        }, index * 5);
+      });
+
+      setClickCount(clickCount + 1);
+
+    } else if (phase === 'clear') {
+      // CLEAR PHASE: Turn colored pixels back to black
+      const coloredPixels: [number, number][] = [];
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+          if (gridRef.current[row][col] !== 'black') {
+            coloredPixels.push([col, row]);
+          }
+        }
+      }
+
+      if (coloredPixels.length === 0) {
+        // All pixels are black, switch to bounce phase
+        setPhase('bounce');
+        return;
+      }
+
+      // Randomly select pixels to turn black
+      const shuffled = coloredPixels.sort(() => Math.random() - 0.5);
+      const toClear = shuffled.slice(0, Math.min(pixelsToChange, shuffled.length));
+
+      // Animate pixels turning black with staggered delay
+      toClear.forEach(([col, row], index) => {
+        setTimeout(() => {
+          ctx.fillStyle = '#000000';
+          ctx.fillRect(col * pixelSize, row * pixelSize, pixelSize, pixelSize);
+          gridRef.current[row][col] = 'black';
+        }, index * 5);
+      });
+
+      setClickCount(clickCount + 1);
     }
-
-    // Randomly select pixels to turn colored
-    const shuffled = availablePixels.sort(() => Math.random() - 0.5);
-    const toRemove = shuffled.slice(0, Math.min(pixelsToRemove, shuffled.length));
-
-    // Animate pixels turning colored with staggered delay
-    toRemove.forEach(([col, row], index) => {
-      setTimeout(() => {
-        const color = getRandomColor();
-        ctx.fillStyle = color;
-        ctx.fillRect(col * pixelSize, row * pixelSize, pixelSize, pixelSize);
-        gridRef.current[row][col] = color;
-      }, index * 5); // 5ms delay between each pixel for visible cascade effect
-    });
-
-    setClickCount(clickCount + 1);
   };
 
   return (
