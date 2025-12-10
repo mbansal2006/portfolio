@@ -6,11 +6,11 @@ const Unauthorized = () => {
   const [hasStarted, setHasStarted] = useState(false);
   const [clickCount, setClickCount] = useState(0);
   const pixelSize = 8; // Larger pixels for more visible decay
-  const gridRef = useRef<string[][]>([]); // Store colors: 'black', 'red', 'blue', 'yellow'
+  const gridRef = useRef<string[][]>([]); // Store colors: 'black', 'red', 'blue', 'green'
   const phonePixelsRef = useRef<Set<string>>(new Set());
 
   const getRandomColor = () => {
-    const colors = ['#ff0000', '#0000ff', '#ffff00']; // red, blue, yellow
+    const colors = ['#ff0000', '#0000ff', '#00ff00']; // red, blue, green
     return colors[Math.floor(Math.random() * colors.length)];
   };
 
