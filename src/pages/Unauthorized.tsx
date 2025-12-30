@@ -16,6 +16,9 @@ const Unauthorized = () => {
     vy: number;
     width: number;
     height: number;
+    text: string;
+    fullText: string;
+    charIndex: number;
   } | null>(null);
   const animationFrameRef = useRef<number | null>(null);
 
@@ -115,7 +118,7 @@ const Unauthorized = () => {
     gridRef.current[coloredPixelY][coloredPixelX] = initialColor;
   };
 
-  // Bouncing "da fuq" animation
+  // Bouncing text animation - adds a letter on each bounce
   useEffect(() => {
     if (phase !== 'bounce') {
       if (animationFrameRef.current) {
@@ -131,17 +134,22 @@ const Unauthorized = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    const fullText = 'carpe diem quam minimum credula postero';
+
     // Initialize bounce position and velocity
     if (!bounceRef.current) {
-      const textWidth = 120;
+      const textWidth = 50; // Start small for just "c"
       const textHeight = 40;
       bounceRef.current = {
         x: Math.random() * (canvas.width - textWidth),
         y: Math.random() * (canvas.height - textHeight),
-        vx: 2 + Math.random() * 2, // Random speed between 2-4
-        vy: 2 + Math.random() * 2,
+        vx: 3 + Math.random() * 2, // Random speed between 3-5
+        vy: 3 + Math.random() * 2,
         width: textWidth,
-        height: textHeight
+        height: textHeight,
+        text: 'c',
+        fullText: fullText,
+        charIndex: 1 // Next character to add
       };
     }
 
@@ -158,20 +166,35 @@ const Unauthorized = () => {
       bounce.x += bounce.vx;
       bounce.y += bounce.vy;
 
+      // Measure current text width
+      ctx.font = 'bold 32px monospace';
+      const textMetrics = ctx.measureText(bounce.text);
+      bounce.width = textMetrics.width + 10;
+
+      let hitEdge = false;
+
       // Bounce off edges
       if (bounce.x <= 0 || bounce.x + bounce.width >= canvas.width) {
         bounce.vx *= -1;
         bounce.x = Math.max(0, Math.min(bounce.x, canvas.width - bounce.width));
+        hitEdge = true;
       }
       if (bounce.y <= 0 || bounce.y + bounce.height >= canvas.height) {
         bounce.vy *= -1;
         bounce.y = Math.max(0, Math.min(bounce.y, canvas.height - bounce.height));
+        hitEdge = true;
       }
 
-      // Draw "da fuq" text
+      // Add next letter on edge hit
+      if (hitEdge && bounce.charIndex < bounce.fullText.length) {
+        bounce.text = bounce.fullText.substring(0, bounce.charIndex + 1);
+        bounce.charIndex++;
+      }
+
+      // Draw text
       ctx.font = 'bold 32px monospace';
       ctx.fillStyle = '#ffffff';
-      ctx.fillText('da fuq', bounce.x, bounce.y + 30);
+      ctx.fillText(bounce.text, bounce.x, bounce.y + 30);
 
       animationFrameRef.current = requestAnimationFrame(animate);
     };
@@ -216,19 +239,12 @@ const Unauthorized = () => {
 
     if (!hasStarted) return;
 
-    // Fibonacci sequence: 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89...
-    const getFibonacci = (n: number): number => {
-      if (n <= 1) return 1;
-      let a = 1, b = 1;
-      for (let i = 2; i <= n; i++) {
-        const temp = a + b;
-        a = b;
-        b = temp;
-      }
-      return b;
+    // Faster growing sequence: starts at 50, doubles each click
+    const getPixelsToChange = (n: number): number => {
+      return Math.floor(50 * Math.pow(2, n));
     };
 
-    const pixelsToChange = getFibonacci(clickCount);
+    const pixelsToChange = getPixelsToChange(clickCount);
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
