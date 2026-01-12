@@ -134,7 +134,7 @@ const Unauthorized = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const fullText = 'carpe diem quam minimum credula postero';
+    const fullText = 'da fuq';
 
     // Initialize bounce position and velocity
     if (!bounceRef.current) {
@@ -239,12 +239,24 @@ const Unauthorized = () => {
 
     if (!hasStarted) return;
 
-    // Faster growing sequence: starts at 50, doubles each click
-    const getPixelsToChange = (n: number): number => {
-      return Math.floor(50 * Math.pow(2, n));
+    // Fibonacci sequence for reveal phase (slower, more dramatic)
+    const getFibonacci = (n: number): number => {
+      if (n <= 1) return 1;
+      let a = 1, b = 1;
+      for (let i = 2; i <= n; i++) {
+        const temp = a + b;
+        a = b;
+        b = temp;
+      }
+      return b;
     };
 
-    const pixelsToChange = getPixelsToChange(clickCount);
+    // Faster exponential sequence for clear phase
+    const getFastClear = (n: number): number => {
+      return Math.floor(100 * Math.pow(2, n));
+    };
+
+    const pixelsToChange = phase === 'reveal' ? getFibonacci(clickCount) : getFastClear(clickCount);
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
