@@ -1,26 +1,45 @@
 import { useEffect, useRef, useState } from 'react';
 import '../styles/unauthorized.css';
 
+const photoModules = import.meta.glob('../assets/photos/*.jpeg', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>;
+const PHOTO_URLS = Object.values(photoModules);
+
 const Unauthorized = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hasStarted, setHasStarted] = useState(false);
-  const [clickCount, setClickCount] = useState(0);
-  const [phase, setPhase] = useState<'reveal' | 'clear' | 'bounce'>('reveal'); // Track which phase we're in
-  const pixelSize = 8; // Larger pixels for more visible decay
+  const [phase, setPhase] = useState<'reveal' | 'clear' | 'bounce' | 'gif'>('reveal');
+  const pixelSize = 8;
+  const REVEAL_BASE = 0.01;
+  const REVEAL_GROWTH = 2;
+  const CLEAR_FRACTION = 0.2;
+  const MAX_STAGGER_MS = 400;
+  const PHOTO_MAX_DIM = 110;
+  const revealClicksRef = useRef(0);
   const gridRef = useRef<string[][]>([]); // Store colors: 'black', 'red', 'blue', 'green'
   const phonePixelsRef = useRef<Set<string>>(new Set());
-  const bounceRef = useRef<{
+  const photosRef = useRef<Array<{
+    bitmap: HTMLCanvasElement;
     x: number;
     y: number;
     vx: number;
     vy: number;
     width: number;
     height: number;
-    text: string;
-    fullText: string;
-    charIndex: number;
-  } | null>(null);
+  }>>([]);
+  const allSpawnedRef = useRef(false);
   const animationFrameRef = useRef<number | null>(null);
+  const mockElRef = useRef<HTMLDivElement>(null);
+  const mockPosRef = useRef({ x: 0, y: 0 });
+  const realMouseRef = useRef({
+    x: typeof window !== 'undefined' ? window.innerWidth / 2 : 0,
+    y: typeof window !== 'undefined' ? window.innerHeight / 2 : 0,
+  });
+  const [mockMode, setMockMode] = useState<
+    'hidden' | 'guiding-pixel' | 'guiding-image' | 'returning'
+  >('hidden');
 
   const getRandomColor = () => {
     const colors = ['#ff0000', '#0000ff', '#00ff00']; // red, blue, green
@@ -118,7 +137,7 @@ const Unauthorized = () => {
     gridRef.current[coloredPixelY][coloredPixelX] = initialColor;
   };
 
-  // Bouncing text animation - adds a letter on each bounce
+  // Bouncing photo collage - photos spawn in fibonacci batches and drift slowly forever
   useEffect(() => {
     if (phase !== 'bounce') {
       if (animationFrameRef.current) {
@@ -134,74 +153,144 @@ const Unauthorized = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const fullText = 'da fuq';
+    let cancelled = false;
+    const timeouts: ReturnType<typeof setTimeout>[] = [];
+    photosRef.current = [];
+    allSpawnedRef.current = false;
 
-    // Initialize bounce position and velocity
-    if (!bounceRef.current) {
-      const textWidth = 50; // Start small for just "c"
-      const textHeight = 40;
-      bounceRef.current = {
-        x: Math.random() * (canvas.width - textWidth),
-        y: Math.random() * (canvas.height - textHeight),
-        vx: 3 + Math.random() * 2, // Random speed between 3-5
-        vy: 3 + Math.random() * 2,
-        width: textWidth,
-        height: textHeight,
-        text: 'c',
-        fullText: fullText,
-        charIndex: 1 // Next character to add
-      };
-    }
+    const loadImage = (url: string) =>
+      new Promise<HTMLImageElement>((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = url;
+      });
 
-    const animate = () => {
-      if (!canvas || !ctx || !bounceRef.current) return;
+    // Pre-render the image into an offscreen canvas at its display size.
+    // Multi-step downscale preserves detail when source is much larger than target.
+    const downsampleToBitmap = (img: HTMLImageElement, targetW: number, targetH: number) => {
+      const dpr = window.devicePixelRatio || 1;
+      const finalW = Math.max(1, Math.round(targetW * dpr));
+      const finalH = Math.max(1, Math.round(targetH * dpr));
 
-      // Clear canvas
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      let srcW = img.naturalWidth;
+      let srcH = img.naturalHeight;
+      let current: HTMLCanvasElement | HTMLImageElement = img;
 
-      const bounce = bounceRef.current;
-
-      // Update position
-      bounce.x += bounce.vx;
-      bounce.y += bounce.vy;
-
-      // Measure current text width
-      ctx.font = 'bold 32px monospace';
-      const textMetrics = ctx.measureText(bounce.text);
-      bounce.width = textMetrics.width + 10;
-
-      let hitEdge = false;
-
-      // Bounce off edges
-      if (bounce.x <= 0 || bounce.x + bounce.width >= canvas.width) {
-        bounce.vx *= -1;
-        bounce.x = Math.max(0, Math.min(bounce.x, canvas.width - bounce.width));
-        hitEdge = true;
-      }
-      if (bounce.y <= 0 || bounce.y + bounce.height >= canvas.height) {
-        bounce.vy *= -1;
-        bounce.y = Math.max(0, Math.min(bounce.y, canvas.height - bounce.height));
-        hitEdge = true;
+      // Halve until within 2x of final size, then do the final draw
+      while (srcW > finalW * 2 && srcH > finalH * 2) {
+        const nextW = Math.max(finalW, Math.floor(srcW / 2));
+        const nextH = Math.max(finalH, Math.floor(srcH / 2));
+        const step = document.createElement('canvas');
+        step.width = nextW;
+        step.height = nextH;
+        const sctx = step.getContext('2d')!;
+        sctx.imageSmoothingEnabled = true;
+        sctx.imageSmoothingQuality = 'high';
+        sctx.drawImage(current, 0, 0, nextW, nextH);
+        current = step;
+        srcW = nextW;
+        srcH = nextH;
       }
 
-      // Add next letter on edge hit
-      if (hitEdge && bounce.charIndex < bounce.fullText.length) {
-        bounce.text = bounce.fullText.substring(0, bounce.charIndex + 1);
-        bounce.charIndex++;
-      }
-
-      // Draw text
-      ctx.font = 'bold 32px monospace';
-      ctx.fillStyle = '#ffffff';
-      ctx.fillText(bounce.text, bounce.x, bounce.y + 30);
-
-      animationFrameRef.current = requestAnimationFrame(animate);
+      const out = document.createElement('canvas');
+      out.width = finalW;
+      out.height = finalH;
+      const octx = out.getContext('2d')!;
+      octx.imageSmoothingEnabled = true;
+      octx.imageSmoothingQuality = 'high';
+      octx.drawImage(current, 0, 0, finalW, finalH);
+      return out;
     };
 
-    animate();
+    const makePhoto = (img: HTMLImageElement) => {
+      const aspect = img.naturalWidth / img.naturalHeight;
+      const width = aspect >= 1 ? PHOTO_MAX_DIM : PHOTO_MAX_DIM * aspect;
+      const height = aspect >= 1 ? PHOTO_MAX_DIM / aspect : PHOTO_MAX_DIM;
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 0.35 + Math.random() * 0.35;
+      return {
+        bitmap: downsampleToBitmap(img, width, height),
+        x: Math.random() * Math.max(1, canvas.width - width),
+        y: Math.random() * Math.max(1, canvas.height - height),
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        width,
+        height,
+      };
+    };
+
+    Promise.all(PHOTO_URLS.map(loadImage)).then((images) => {
+      if (cancelled) return;
+
+      // Shuffle so spawn order feels random
+      const shuffled = [...images].sort(() => Math.random() - 0.5);
+
+      // Build fibonacci batch sizes until we cover all photos
+      const batches: number[] = [];
+      let a = 1;
+      let b = 1;
+      let remaining = shuffled.length;
+      while (remaining > 0) {
+        const take = Math.min(a, remaining);
+        batches.push(take);
+        remaining -= take;
+        [a, b] = [b, a + b];
+      }
+
+      const BATCH_DELAY_MS = 900;
+      let cursor = 0;
+      batches.forEach((count, i) => {
+        const t = setTimeout(() => {
+          if (cancelled) return;
+          for (let k = 0; k < count; k++) {
+            photosRef.current.push(makePhoto(shuffled[cursor + k]));
+          }
+          cursor += count;
+          if (i === batches.length - 1) {
+            allSpawnedRef.current = true;
+          }
+        }, i * BATCH_DELAY_MS);
+        timeouts.push(t);
+      });
+
+      const animate = () => {
+        if (!canvas || !ctx) return;
+
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        for (const photo of photosRef.current) {
+          photo.x += photo.vx;
+          photo.y += photo.vy;
+
+          if (photo.x <= 0 || photo.x + photo.width >= canvas.width) {
+            photo.vx *= -1;
+            photo.x = Math.max(0, Math.min(photo.x, canvas.width - photo.width));
+          }
+          if (photo.y <= 0 || photo.y + photo.height >= canvas.height) {
+            photo.vy *= -1;
+            photo.y = Math.max(0, Math.min(photo.y, canvas.height - photo.height));
+          }
+
+          ctx.drawImage(
+            photo.bitmap,
+            Math.round(photo.x),
+            Math.round(photo.y),
+            photo.width,
+            photo.height,
+          );
+        }
+
+        animationFrameRef.current = requestAnimationFrame(animate);
+      };
+
+      animate();
+    });
 
     return () => {
+      cancelled = true;
+      timeouts.forEach(clearTimeout);
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
@@ -219,6 +308,81 @@ const Unauthorized = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Track real mouse position
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      realMouseRef.current = { x: e.clientX, y: e.clientY };
+    };
+    window.addEventListener('mousemove', onMove);
+    return () => window.removeEventListener('mousemove', onMove);
+  }, []);
+
+  // First hint: point to the starting colored pixel
+  useEffect(() => {
+    const t = setTimeout(() => {
+      mockPosRef.current = { ...realMouseRef.current };
+      setMockMode('guiding-pixel');
+    }, 600);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Second hint: once bounce phase starts and first photo has spawned, point to it
+  useEffect(() => {
+    if (phase !== 'bounce') return;
+    let raf = 0;
+    const check = () => {
+      if (photosRef.current.length > 0) {
+        mockPosRef.current = { ...realMouseRef.current };
+        setMockMode('guiding-image');
+        return;
+      }
+      raf = requestAnimationFrame(check);
+    };
+    raf = requestAnimationFrame(check);
+    return () => cancelAnimationFrame(raf);
+  }, [phase]);
+
+  // Drive mock cursor position — ease toward target, retire when returning-to-mouse completes
+  useEffect(() => {
+    if (mockMode === 'hidden') return;
+    let raf = 0;
+    const step = () => {
+      let tx: number;
+      let ty: number;
+      if (mockMode === 'guiding-pixel') {
+        const cols = Math.floor(window.innerWidth / pixelSize);
+        const rows = Math.floor(window.innerHeight / pixelSize);
+        tx = Math.floor(cols / 2) * pixelSize + pixelSize / 2;
+        ty = (Math.floor(rows / 2) - 10) * pixelSize + pixelSize / 2;
+      } else if (mockMode === 'guiding-image') {
+        const p = photosRef.current[0];
+        if (!p) {
+          setMockMode('returning');
+          return;
+        }
+        tx = p.x + p.width / 2;
+        ty = p.y + p.height / 2;
+      } else {
+        tx = realMouseRef.current.x;
+        ty = realMouseRef.current.y;
+      }
+      const dx = tx - mockPosRef.current.x;
+      const dy = ty - mockPosRef.current.y;
+      mockPosRef.current.x += dx * 0.08;
+      mockPosRef.current.y += dy * 0.08;
+      if (mockElRef.current) {
+        mockElRef.current.style.transform = `translate(${mockPosRef.current.x}px, ${mockPosRef.current.y}px)`;
+      }
+      if (mockMode === 'returning' && Math.hypot(dx, dy) < 6) {
+        setMockMode('hidden');
+        return;
+      }
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [mockMode]);
+
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -230,38 +394,52 @@ const Unauthorized = () => {
     const cols = Math.floor(canvas.width / pixelSize);
     const rows = Math.floor(canvas.height / pixelSize);
 
-    // First click on the colored pixel - open Substack
+    // First click on the colored pixel - open Substack in a background tab
     if (!hasStarted && gridRef.current[y]?.[x] !== 'black') {
-      window.open('https://mahirbansal.substack.com', '_blank');
+      const a = document.createElement('a');
+      a.href = 'https://mahirbansal.substack.com';
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.dispatchEvent(
+        new MouseEvent('click', {
+          view: window,
+          bubbles: true,
+          cancelable: true,
+          ctrlKey: true,
+          metaKey: true,
+          shiftKey: false,
+        }),
+      );
+      a.remove();
       setHasStarted(true);
       return;
     }
 
     if (!hasStarted) return;
 
-    // Fibonacci sequence for reveal phase (slower, more dramatic)
-    const getFibonacci = (n: number): number => {
-      if (n <= 1) return 1;
-      let a = 1, b = 1;
-      for (let i = 2; i <= n; i++) {
-        const temp = a + b;
-        a = b;
-        b = temp;
+    if (phase === 'bounce') {
+      const px = e.clientX - rect.left;
+      const py = e.clientY - rect.top;
+      // Topmost photo is the last one drawn
+      for (let i = photosRef.current.length - 1; i >= 0; i--) {
+        const p = photosRef.current[i];
+        if (px >= p.x && px <= p.x + p.width && py >= p.y && py <= p.y + p.height) {
+          photosRef.current.splice(i, 1);
+          if (mockMode === 'guiding-image') setMockMode('returning');
+          if (allSpawnedRef.current && photosRef.current.length === 0) {
+            setPhase('gif');
+          }
+          break;
+        }
       }
-      return b;
-    };
+      return;
+    }
 
-    // Faster exponential sequence for clear phase
-    const getFastClear = (n: number): number => {
-      return Math.floor(100 * Math.pow(2, n));
-    };
-
-    const pixelsToChange = phase === 'reveal' ? getFibonacci(clickCount) : getFastClear(clickCount);
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     if (phase === 'reveal') {
-      // REVEAL PHASE: Turn black pixels (except phone number) to color
       const availablePixels: [number, number][] = [];
       for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
@@ -272,30 +450,33 @@ const Unauthorized = () => {
       }
 
       if (availablePixels.length === 0) {
-        // All non-phone pixels are colored, switch to clear phase
         setPhase('clear');
-        setClickCount(0);
         return;
       }
 
-      // Randomly select pixels to turn colored
+      const fraction = Math.min(1, REVEAL_BASE * Math.pow(REVEAL_GROWTH, revealClicksRef.current));
+      const pixelsToChange = Math.max(1, Math.ceil(availablePixels.length * fraction));
       const shuffled = availablePixels.sort(() => Math.random() - 0.5);
-      const toColor = shuffled.slice(0, Math.min(pixelsToChange, shuffled.length));
+      const toColor = shuffled.slice(0, pixelsToChange);
+      const perPixelMs = MAX_STAGGER_MS / toColor.length;
 
-      // Animate pixels turning colored with staggered delay
       toColor.forEach(([col, row], index) => {
-        setTimeout(() => {
+        const paint = () => {
           const color = getRandomColor();
           ctx.fillStyle = color;
           ctx.fillRect(col * pixelSize, row * pixelSize, pixelSize, pixelSize);
           gridRef.current[row][col] = color;
-        }, index * 5);
+        };
+        if (perPixelMs < 1) paint();
+        else setTimeout(paint, index * perPixelMs);
       });
 
-      setClickCount(clickCount + 1);
+      revealClicksRef.current += 1;
+      if (mockMode === 'guiding-pixel' && revealClicksRef.current >= 1) {
+        setMockMode('returning');
+      }
 
     } else if (phase === 'clear') {
-      // CLEAR PHASE: Turn colored pixels back to black
       const coloredPixels: [number, number][] = [];
       for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
@@ -306,39 +487,97 @@ const Unauthorized = () => {
       }
 
       if (coloredPixels.length === 0) {
-        // All pixels are black, switch to bounce phase
         setPhase('bounce');
         return;
       }
 
-      // Randomly select pixels to turn black
+      const pixelsToChange = Math.max(1, Math.ceil(coloredPixels.length * CLEAR_FRACTION));
       const shuffled = coloredPixels.sort(() => Math.random() - 0.5);
-      const toClear = shuffled.slice(0, Math.min(pixelsToChange, shuffled.length));
+      const toClear = shuffled.slice(0, pixelsToChange);
+      const perPixelMs = MAX_STAGGER_MS / toClear.length;
 
-      // Animate pixels turning black with staggered delay
       toClear.forEach(([col, row], index) => {
-        setTimeout(() => {
+        const paint = () => {
           ctx.fillStyle = '#000000';
           ctx.fillRect(col * pixelSize, row * pixelSize, pixelSize, pixelSize);
           gridRef.current[row][col] = 'black';
-        }, index * 5);
+        };
+        if (perPixelMs < 1) paint();
+        else setTimeout(paint, index * perPixelMs);
       });
-
-      setClickCount(clickCount + 1);
     }
   };
 
+  if (phase === 'gif') {
+    return (
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: '#000',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          margin: 0,
+          padding: 0,
+        }}
+      >
+        <img
+          src="/thispresentmoment.gif"
+          alt=""
+          style={{
+            maxWidth: '90vw',
+            maxHeight: '90vh',
+            display: 'block',
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
-    <canvas
-      ref={canvasRef}
-      onClick={handleCanvasClick}
-      style={{
-        display: 'block',
-        cursor: 'pointer',
-        margin: 0,
-        padding: 0
-      }}
-    />
+    <>
+      <canvas
+        ref={canvasRef}
+        onClick={handleCanvasClick}
+        style={{
+          display: 'block',
+          cursor: 'pointer',
+          margin: 0,
+          padding: 0
+        }}
+      />
+      <div
+        ref={mockElRef}
+        aria-hidden
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          pointerEvents: 'none',
+          opacity: mockMode === 'hidden' ? 0 : 1,
+          transition: 'opacity 200ms ease',
+          zIndex: 10,
+          willChange: 'transform',
+        }}
+      >
+        <svg
+          width="22"
+          height="22"
+          viewBox="0 0 22 22"
+          xmlns="http://www.w3.org/2000/svg"
+          style={{ display: 'block', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.6))' }}
+        >
+          <path
+            d="M2 2 L2 17 L6.5 13 L9 19 L12 17.7 L9.5 11.7 L15.5 11.5 Z"
+            fill="#ffffff"
+            stroke="#000000"
+            strokeWidth="1.2"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </div>
+    </>
   );
 };
 
