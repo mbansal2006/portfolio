@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import PoemsWall from '../components/PoemsWall';
 import '../styles/unauthorized.css';
 
 const photoModules = import.meta.glob('../assets/photos/*.jpeg', {
@@ -10,7 +11,7 @@ const PHOTO_URLS = Object.values(photoModules);
 const Unauthorized = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hasStarted, setHasStarted] = useState(false);
-  const [phase, setPhase] = useState<'reveal' | 'clear' | 'bounce' | 'gif'>('reveal');
+  const [phase, setPhase] = useState<'reveal' | 'clear' | 'origin' | 'bounce' | 'poems'>('reveal');
   const pixelSize = 8;
   const REVEAL_BASE = 0.01;
   const REVEAL_GROWTH = 2;
@@ -20,15 +21,20 @@ const Unauthorized = () => {
   const revealClicksRef = useRef(0);
   const gridRef = useRef<string[][]>([]); // Store colors: 'black', 'red', 'blue', 'green'
   const phonePixelsRef = useRef<Set<string>>(new Set());
-  const photosRef = useRef<Array<{
+  type Photo = {
     bitmap: HTMLCanvasElement;
+    img: HTMLImageElement;
     x: number;
     y: number;
     vx: number;
     vy: number;
     width: number;
     height: number;
-  }>>([]);
+  };
+  const photosRef = useRef<Photo[]>([]);
+  const [maximizedPhoto, setMaximizedPhoto] = useState<Photo | null>(null);
+  const lastBouncerClickRef = useRef<{ photo: Photo; time: number } | null>(null);
+  const DOUBLE_CLICK_MS = 280;
   const allSpawnedRef = useRef(false);
   const animationFrameRef = useRef<number | null>(null);
   const mockElRef = useRef<HTMLDivElement>(null);
@@ -38,12 +44,55 @@ const Unauthorized = () => {
     y: typeof window !== 'undefined' ? window.innerHeight / 2 : 0,
   });
   const [mockMode, setMockMode] = useState<
-    'hidden' | 'guiding-pixel' | 'guiding-image' | 'returning'
+    'hidden' | 'guiding-pixel' | 'returning'
   >('hidden');
 
   const getRandomColor = () => {
     const colors = ['#ff0000', '#0000ff', '#00ff00']; // red, blue, green
     return colors[Math.floor(Math.random() * colors.length)];
+  };
+
+  const NAV_COLORS = {
+    red: '#ff0000',
+    green: '#00ff00',
+    blue: '#0000ff',
+  } as const;
+
+  const NAV_TARGETS = {
+    red: 'blog' as const,
+    green: 'poems' as const,
+    blue: 'bounce' as const,
+  };
+
+  // Set at the moment reveal → clear transitions. Each is a cell coord that survives the clear-out.
+  const navPositionsRef = useRef<{
+    red: [number, number];
+    green: [number, number];
+    blue: [number, number];
+  } | null>(null);
+  const navFlashRef = useRef<{ kind: 'red' | 'green' | 'blue'; at: number } | null>(null);
+
+  const pickNavPositions = (rows: number, cols: number) => {
+    const buckets: Record<'red' | 'green' | 'blue', Array<[number, number]>> = {
+      red: [],
+      green: [],
+      blue: [],
+    };
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        const c = gridRef.current[row][col];
+        if (c === '#ff0000') buckets.red.push([col, row]);
+        else if (c === '#00ff00') buckets.green.push([col, row]);
+        else if (c === '#0000ff') buckets.blue.push([col, row]);
+      }
+    }
+    const pick = (arr: Array<[number, number]>): [number, number] | null =>
+      arr.length === 0 ? null : arr[Math.floor(Math.random() * arr.length)];
+    const r = pick(buckets.red);
+    const g = pick(buckets.green);
+    const b = pick(buckets.blue);
+    if (!r || !g || !b) return; // can't form nav set; leave previous value
+    navPositionsRef.current = { red: r, green: g, blue: b };
   };
 
   // Define phone number pixels (571-751-0100)
@@ -211,6 +260,7 @@ const Unauthorized = () => {
       const speed = 0.35 + Math.random() * 0.35;
       return {
         bitmap: downsampleToBitmap(img, width, height),
+        img,
         x: Math.random() * Math.max(1, canvas.width - width),
         y: Math.random() * Math.max(1, canvas.height - height),
         vx: Math.cos(angle) * speed,
@@ -308,6 +358,66 @@ const Unauthorized = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Origin phase: three pulsing R/G/B nav pixels with occasional sparks
+  useEffect(() => {
+    if (phase !== 'origin') {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+      return;
+    }
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const start = performance.now();
+
+    const animate = () => {
+      const now = performance.now();
+      const t = (now - start) / 1000;
+
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const positions = navPositionsRef.current;
+      if (positions) {
+        const kinds: Array<'red' | 'green' | 'blue'> = ['red', 'green', 'blue'];
+        kinds.forEach((kind, i) => {
+          const [cx, cy] = positions[kind];
+          const offset = (i * 2 * Math.PI) / 3;
+          let pulse = 0.7 + 0.3 * Math.sin(t * 1.8 + offset);
+          const flash = navFlashRef.current;
+          if (flash && flash.kind === kind) {
+            const since = now - flash.at;
+            if (since < 450) {
+              pulse = Math.min(1, pulse + (1 - since / 450) * 0.6);
+            } else {
+              navFlashRef.current = null;
+            }
+          }
+          ctx.globalAlpha = pulse;
+          ctx.fillStyle = NAV_COLORS[kind];
+          ctx.fillRect(cx * pixelSize, cy * pixelSize, pixelSize, pixelSize);
+          ctx.globalAlpha = 1;
+        });
+      }
+
+      animationFrameRef.current = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [phase]);
+
   // Track real mouse position
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
@@ -317,6 +427,14 @@ const Unauthorized = () => {
     return () => window.removeEventListener('mousemove', onMove);
   }, []);
 
+  // Clear bounce-only state when leaving the bounce phase
+  useEffect(() => {
+    if (phase !== 'bounce') {
+      setMaximizedPhoto(null);
+      lastBouncerClickRef.current = null;
+    }
+  }, [phase]);
+
   // First hint: point to the starting colored pixel
   useEffect(() => {
     const t = setTimeout(() => {
@@ -325,22 +443,6 @@ const Unauthorized = () => {
     }, 600);
     return () => clearTimeout(t);
   }, []);
-
-  // Second hint: once bounce phase starts and first photo has spawned, point to it
-  useEffect(() => {
-    if (phase !== 'bounce') return;
-    let raf = 0;
-    const check = () => {
-      if (photosRef.current.length > 0) {
-        mockPosRef.current = { ...realMouseRef.current };
-        setMockMode('guiding-image');
-        return;
-      }
-      raf = requestAnimationFrame(check);
-    };
-    raf = requestAnimationFrame(check);
-    return () => cancelAnimationFrame(raf);
-  }, [phase]);
 
   // Drive mock cursor position — ease toward target, retire when returning-to-mouse completes
   useEffect(() => {
@@ -354,14 +456,6 @@ const Unauthorized = () => {
         const rows = Math.floor(window.innerHeight / pixelSize);
         tx = Math.floor(cols / 2) * pixelSize + pixelSize / 2;
         ty = (Math.floor(rows / 2) - 10) * pixelSize + pixelSize / 2;
-      } else if (mockMode === 'guiding-image') {
-        const p = photosRef.current[0];
-        if (!p) {
-          setMockMode('returning');
-          return;
-        }
-        tx = p.x + p.width / 2;
-        ty = p.y + p.height / 2;
       } else {
         tx = realMouseRef.current.x;
         ty = realMouseRef.current.y;
@@ -394,45 +488,84 @@ const Unauthorized = () => {
     const cols = Math.floor(canvas.width / pixelSize);
     const rows = Math.floor(canvas.height / pixelSize);
 
-    // First click on the colored pixel - open Substack in a background tab
+    // First click on the colored pixel - starts the reveal puzzle (no longer opens a tab)
     if (!hasStarted && gridRef.current[y]?.[x] !== 'black') {
-      const a = document.createElement('a');
-      a.href = 'https://mahirbansal.substack.com';
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      document.body.appendChild(a);
-      a.dispatchEvent(
-        new MouseEvent('click', {
-          view: window,
-          bubbles: true,
-          cancelable: true,
-          ctrlKey: true,
-          metaKey: true,
-          shiftKey: false,
-        }),
-      );
-      a.remove();
       setHasStarted(true);
       return;
     }
 
     if (!hasStarted) return;
 
+    if (phase === 'origin') {
+      const positions = navPositionsRef.current;
+      if (!positions) return;
+      const kinds: Array<'red' | 'green' | 'blue'> = ['red', 'green', 'blue'];
+      for (const kind of kinds) {
+        const [px, py] = positions[kind];
+        if (Math.abs(x - px) <= 2 && Math.abs(y - py) <= 2) {
+          navFlashRef.current = { kind, at: performance.now() };
+          const target = NAV_TARGETS[kind];
+          if (target === 'blog') {
+            const a = document.createElement('a');
+            a.href = 'https://mahirbansal.substack.com';
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            document.body.appendChild(a);
+            a.dispatchEvent(
+              new MouseEvent('click', {
+                view: window,
+                bubbles: true,
+                cancelable: true,
+                ctrlKey: true,
+                metaKey: true,
+              }),
+            );
+            a.remove();
+          } else if (target === 'poems') {
+            setPhase('poems');
+          } else if (target === 'bounce') {
+            setPhase('bounce');
+          }
+          return;
+        }
+      }
+      return;
+    }
+
     if (phase === 'bounce') {
       const px = e.clientX - rect.left;
       const py = e.clientY - rect.top;
-      // Topmost photo is the last one drawn
+      let hit: Photo | null = null;
       for (let i = photosRef.current.length - 1; i >= 0; i--) {
         const p = photosRef.current[i];
         if (px >= p.x && px <= p.x + p.width && py >= p.y && py <= p.y + p.height) {
-          photosRef.current.splice(i, 1);
-          if (mockMode === 'guiding-image') setMockMode('returning');
-          if (allSpawnedRef.current && photosRef.current.length === 0) {
-            setPhase('gif');
-          }
+          hit = p;
           break;
         }
       }
+      if (!hit) return;
+
+      const now = performance.now();
+      const last = lastBouncerClickRef.current;
+      if (last && last.photo === hit && now - last.time < DOUBLE_CLICK_MS) {
+        // Second click in a double-click window — maximize instead of remove
+        setMaximizedPhoto(hit);
+        lastBouncerClickRef.current = null;
+        return;
+      }
+      lastBouncerClickRef.current = { photo: hit, time: now };
+      const target = hit;
+      setTimeout(() => {
+        const cur = lastBouncerClickRef.current;
+        if (!cur || cur.photo !== target || cur.time !== now) return;
+        lastBouncerClickRef.current = null;
+        const idx = photosRef.current.indexOf(target);
+        if (idx === -1) return;
+        photosRef.current.splice(idx, 1);
+        if (allSpawnedRef.current && photosRef.current.length === 0) {
+          setPhase('origin');
+        }
+      }, DOUBLE_CLICK_MS);
       return;
     }
 
@@ -450,6 +583,7 @@ const Unauthorized = () => {
       }
 
       if (availablePixels.length === 0) {
+        pickNavPositions(rows, cols);
         setPhase('clear');
         return;
       }
@@ -478,16 +612,23 @@ const Unauthorized = () => {
 
     } else if (phase === 'clear') {
       const coloredPixels: [number, number][] = [];
+      const navPositions = navPositionsRef.current;
+      const navSet = new Set<string>();
+      if (navPositions) {
+        navSet.add(`${navPositions.red[0]},${navPositions.red[1]}`);
+        navSet.add(`${navPositions.green[0]},${navPositions.green[1]}`);
+        navSet.add(`${navPositions.blue[0]},${navPositions.blue[1]}`);
+      }
       for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
-          if (gridRef.current[row][col] !== 'black') {
+          if (gridRef.current[row][col] !== 'black' && !navSet.has(`${col},${row}`)) {
             coloredPixels.push([col, row]);
           }
         }
       }
 
       if (coloredPixels.length === 0) {
-        setPhase('bounce');
+        setPhase('origin');
         return;
       }
 
@@ -508,33 +649,6 @@ const Unauthorized = () => {
     }
   };
 
-  if (phase === 'gif') {
-    return (
-      <div
-        style={{
-          position: 'fixed',
-          inset: 0,
-          backgroundColor: '#000',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          margin: 0,
-          padding: 0,
-        }}
-      >
-        <img
-          src="/thispresentmoment.gif"
-          alt=""
-          style={{
-            maxWidth: '90vw',
-            maxHeight: '90vh',
-            display: 'block',
-          }}
-        />
-      </div>
-    );
-  }
-
   return (
     <>
       <canvas
@@ -547,6 +661,46 @@ const Unauthorized = () => {
           padding: 0
         }}
       />
+      {phase === 'poems' && (
+        <PoemsWall onClose={() => setPhase('origin')} />
+      )}
+      {phase === 'bounce' && (
+        <button
+          type="button"
+          aria-label="Back"
+          onClick={() => setPhase('origin')}
+          style={cornerCloseStyle}
+        >
+          <CloseIcon />
+        </button>
+      )}
+      {phase === 'bounce' && maximizedPhoto && (
+        <div
+          onClick={() => setMaximizedPhoto(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'rgba(0,0,0,0.25)',
+            cursor: 'zoom-out',
+            zIndex: 20,
+          }}
+        >
+          <img
+            src={maximizedPhoto.img.src}
+            alt=""
+            draggable={false}
+            style={{
+              maxWidth: '78vw',
+              maxHeight: '78vh',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.7)',
+              userSelect: 'none',
+            }}
+          />
+        </div>
+      )}
       <div
         ref={mockElRef}
         aria-hidden
@@ -580,5 +734,29 @@ const Unauthorized = () => {
     </>
   );
 };
+
+const cornerCloseStyle: React.CSSProperties = {
+  position: 'fixed',
+  top: '20px',
+  right: '20px',
+  width: '36px',
+  height: '36px',
+  borderRadius: '50%',
+  border: 'none',
+  background: 'rgba(255,255,255,0.08)',
+  color: 'rgba(255,255,255,0.8)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  cursor: 'pointer',
+  backdropFilter: 'blur(4px)',
+  zIndex: 25,
+};
+
+const CloseIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <path d="M2 2 L12 12 M12 2 L2 12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+);
 
 export default Unauthorized;
